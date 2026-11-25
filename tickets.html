@@ -125,8 +125,10 @@ button{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:
 
 <script>
   const SUPABASE_URL = 'https://ylbqwgigsvdrglgjcpyu.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsYnF3Z2lnc3ZkcmdsZ2pjcHl1Iiwicm9sZSI6InVzZXIiLCJpYXQiOjE3OTI2NDQ1OTUsImV4cCI6MjEwODIyMDU5NX0.VjhL9UjElDZTdyjM3tX7qnk-8U_Qgrehq6yxkeVLELw';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsYnF3Z2lnc3ZkcmdsZ2pjcHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDQ1OTUsImV4cCI6MjEwODIyMDU5NX0.VjhL9UjElDZTdyjM3tX7qnk-8U_Qgrehq6yxkeVLELw';
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
   // Mobile Menu Toggle Script
   const menuToggle = document.getElementById('menuToggle');
@@ -152,11 +154,11 @@ button{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:
     toast.className = 'cv-toast';
     
     toast.innerHTML = `
-      <div class="cv-toast-icon">${icon}</div>
+      <div class="cv-toast-icon">${esc(icon)}</div>
       <div class="cv-toast-content">
-        <div class="cv-toast-tag">${badgeText}</div>
-        <div class="cv-toast-title">${title}</div>
-        <div class="cv-toast-time">${now}</div>
+        <div class="cv-toast-tag">${esc(badgeText)}</div>
+        <div class="cv-toast-title">${esc(title)}</div>
+        <div class="cv-toast-time">${esc(now)}</div>
       </div>
       <button class="cv-toast-close" onclick="this.parentElement.remove()">×</button>
     `;
@@ -214,8 +216,6 @@ button{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:
     }));
     window.location.href = 'login.html';
   }
-
-  function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
   async function loadUserTickets() {
     let user = null;
