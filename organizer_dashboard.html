@@ -253,10 +253,10 @@ button:hover,.btn:hover{filter:brightness(1.08)}
     toast.className = 'cv-toast';
     
     toast.innerHTML = `
-      <div class="cv-toast-icon">${icon}</div>
+      <div class="cv-toast-icon">${esc(icon)}</div>
       <div class="cv-toast-content">
-        <div class="cv-toast-tag">${badgeText}</div>
-        <div class="cv-toast-title">${title}</div>
+        <div class="cv-toast-tag">${esc(badgeText)}</div>
+        <div class="cv-toast-title">${esc(title)}</div>
         <div class="cv-toast-time">${now}</div>
       </div>
       <button class="cv-toast-close" onclick="this.parentElement.remove()">×</button>
@@ -351,7 +351,9 @@ button:hover,.btn:hover{filter:brightness(1.08)}
   function money(n){ return Number(n)===0?'Free':'₦'+Number(n).toLocaleString('en-NG'); }
 
   async function loadDashboard() {
-    let user = JSON.parse(localStorage.getItem('cv_user') || 'null');
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) {}
+    if (!user || user.role !== 'organizer') return; // renderNavbar() is already redirecting
     const grid = document.getElementById('myEventsGrid');
     grid.innerHTML = '<div class="empty">Loading your managed events...</div>';
 
@@ -382,7 +384,7 @@ button:hover,.btn:hover{filter:brightness(1.08)}
 
     // Calculate total stats across organizer's events
     const eventIds = myEvents.map(e => String(e.id));
-    const { data: allTickets } = await supabaseClient.from('tickets').select('*');
+    const { data: allTickets } = await supabaseClient.from('tickets').select('*').in('event_id', eventIds);
     
     const myTickets = (allTickets || []).filter(t => eventIds.includes(String(t.event_id)));
 
@@ -390,7 +392,8 @@ button:hover,.btn:hover{filter:brightness(1.08)}
     myTickets.forEach(t => {
       const matchEv = myEvents.find(e => String(e.id) === String(t.event_id));
       if (matchEv) {
-        totalRevenue += Number(matchEv.price || 0);
+        // Use what this ticket was actually sold for (tiers differ), fall back to the event's base price
+        totalRevenue += Number(t.price ?? matchEv.price ?? 0);
       }
     });
 

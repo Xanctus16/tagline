@@ -1,26 +1,30 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tag Line — My Tickets</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tag Line — Login & Sign Up</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#0c1020;--panel:#151b30;--panel2:#1c2440;--text:#f4f6ff;--muted:#aeb8d4;--accent:#ff7b36;--line:#2b3454;--green:#61d6a4}
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(circle at 80% 0,#25204d 0,transparent 35%),var(--bg);font-family:Inter,system-ui,sans-serif;color:var(--text);min-height:100vh}
+body{margin:0;background:radial-gradient(circle at 80% 0,#25204d 0,transparent 35%),var(--bg);font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--text);min-height:100vh;display:flex;flex-direction:column;justify-content:space-between}
 a{text-decoration:none;color:inherit}
-.wrap{max-width:1180px;margin:0 auto;padding:20px;position:relative}
+button,input,select{font:inherit}
+button,.btn{cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-weight:750;background:var(--accent);color:#20120b;display:inline-block;width:100%;transition:filter 0.2s}
+button:hover,.btn:hover{filter:brightness(1.08)}
+.wrap{max-width:1180px;margin:auto;padding:20px;width:100%;position:relative}
 
 .top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 0 22px;position:relative}
-.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;color:var(--text);flex-shrink:0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;letter-spacing:-.5px;color:var(--text)}
 .logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#ffcb69);display:grid;place-items:center;color:#261306;font-size:21px}
 .brand small{display:block;font-size:10px;letter-spacing:1.6px;color:var(--muted);font-weight:700}
 
-/* Standardized Compact Navigation Header */
-.nav{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
-.nav a{background:transparent;padding:8px 12px;border-radius:12px;color:var(--muted);font-weight:750;display:inline-flex;align-items:center;gap:4px;font-size:13px;border:1px solid transparent;transition:all 0.2s;white-space:nowrap;line-height:1.2}
-.nav a:hover{color:var(--text);border-color:var(--line);background:var(--panel2)}
-.nav a.active{background:var(--panel2);color:white;border-color:var(--line)}
+/* Standardized Navigation Header */
+.nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.nav a{padding:10px 14px;border-radius:12px;color:var(--muted);font-weight:700;font-size:13px;transition:all 0.2s}
+.nav a:hover{color:var(--text);background:var(--panel2)}
+.nav a.active{background:var(--panel2);color:white}
 .nav a.logout-btn{color:#ffb38b;border:1px solid rgba(255,123,54,0.2)}
 .nav a.logout-btn:hover{background:rgba(255,123,54,0.1)}
 
@@ -36,15 +40,17 @@ a{text-decoration:none;color:inherit}
   cursor: pointer;
 }
 
-.sectionhead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:28px 0 14px}
-.ticket{background:#fff;color:#171827;border-radius:18px;padding:20px;max-width:420px;margin:14px 0;position:relative;box-shadow:0 10px 30px rgba(0,0,0,0.4);cursor:pointer;transition:transform 0.2s,box-shadow 0.2s}
-.ticket:hover{transform:translateY(-3px);box-shadow:0 15px 35px rgba(255,123,54,0.2)}
-.ticketlogo{font-weight:950;color:#ea672f;font-size:12px;margin-bottom:8px;display:flex;justify-content:space-between}
-.badge{padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800;text-transform:uppercase}
-.badge.valid{background:#e6f7f0;color:#108a55}
-.badge.used{background:#ffebe6;color:#d9381e}
-.tier-badge{display:inline-block;background:#151b30;color:#ff7b36;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:800;margin-top:8px}
-.empty{padding:32px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px}
+.auth-container{max-width:440px;margin:40px auto;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:32px;box-shadow:0 12px 30px rgba(0,0,0,0.3);width:100%}
+.tabs{display:flex;background:var(--panel2);border-radius:12px;padding:4px;margin-bottom:24px;border:1px solid var(--line)}
+.tab-btn{flex:1;background:transparent;color:var(--muted);border:0;padding:10px;border-radius:8px;font-weight:700;cursor:pointer}
+.tab-btn.active{background:var(--accent);color:#20120b}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.field label{font-size:12px;color:var(--muted);font-weight:750}
+.field input,.field select{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--text);outline:none;width:100%}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.notice{padding:12px 14px;border-radius:12px;background:#17372f;border:1px solid #286c58;color:#b9ffe5;font-size:13px;margin-top:16px;text-align:center}
+.notice.warning{background:#3b2c20;border-color:#805a35;color:#ffe0b8}
+.hidden{display:none!important}
 .footer{color:#7782a4;font-size:12px;text-align:center;padding:30px 0 10px}
 
 /* Toast Notification Styles */
@@ -60,7 +66,7 @@ a{text-decoration:none;color:inherit}
 @keyframes slideIn { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes slideOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-20px) scale(0.95); } }
 
-/* Mobile Navigation Breakpoint */
+/* Mobile Navigation Breakpoint & Hamburger Menu Styles */
 @media(max-width:850px){
   .top { flex-wrap: nowrap; gap: 10px; }
   .menu-toggle {
@@ -101,19 +107,92 @@ a{text-decoration:none;color:inherit}
       <div>Tag Line <small>SEAMLESS ACCESS</small></div>
     </a>
     <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">☰</button>
-    <nav class="nav" id="navLinks"></nav>
+    <nav class="nav" id="navLinks">
+      <a href="index.html">Discover</a>
+      <a href="login.html" class="active">Login</a>
+    </nav>
   </header>
 
-  <div class="sectionhead">
-    <div><h2>My Tickets & Passes</h2><p>Your saved event tickets and reserved table passes. Tap any pass to view/print.</p></div>
-  </div>
+  <div class="auth-container">
+    <div class="tabs">
+      <button class="tab-btn active" id="loginTabBtn" onclick="switchForm('login')">Sign In</button>
+      <button class="tab-btn" id="signupTabBtn" onclick="switchForm('signup')">Sign Up</button>
+    </div>
 
-  <div id="ticketList"></div>
+    <!-- LOGIN FORM -->
+    <form id="loginForm">
+      <h2 style="margin:0 0 6px">Welcome back</h2>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 20px">Sign in with your phone number or email.</p>
+      
+      <div class="field">
+        <label>Phone number or Email</label>
+        <input type="text" id="loginIdentifier" required placeholder="e.g. 08012345678 or Xanctus@gmail.com">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" required placeholder="••••••••">
+      </div>
+      <button type="submit">Sign In</button>
+    </form>
+
+    <!-- SIGNUP FORM -->
+    <form id="signupForm" class="hidden">
+      <h2 style="margin:0 0 6px">Create an account</h2>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 20px">Join TagLine to discover events and passes.</p>
+
+      <div class="field">
+        <label>Full Name </label>
+        <input type="text" id="signupName" required placeholder="e.g. Chris XANCTUS">
+      </div>
+      <div class="field">
+        <label>Nickname </label>
+        <input type="text" id="signupNickname" required placeholder="e.g. VibeMaster or Jay">
+      </div>
+      <div class="field">
+        <label>Phone Number </label>
+        <input type="tel" id="signupPhone" required placeholder="e.g. 08012345678">
+      </div>
+      <div class="field">
+        <label>Campus </label>
+        <select id="signupCampus" required>
+         <option>SDU, Ozoro</option>
+         <option>SDU, Orerokpe</option>
+         <option>DELSU, Abraka</option>
+         <option>DOU, Asaba</option>
+         <option>FUPRE, Warri</option>
+         <option>UNIDEL, Agbor</option>
+         <option>Other / off-campus</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Account Type </label>
+        <select id="signupRole" required>
+          <option value="user">Regular User (Attendee)</option>
+          <option value="organizer">Event Organizer (Host)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="signupEmail" placeholder="Xanctus@gmail.com">
+      </div>
+      <div class="field">
+        <label>Password </label>
+        <input type="password" id="signupPassword" required minlength="6" placeholder="At least 6 characters">
+      </div>
+      <button type="submit">Create Account</button>
+    </form>
+
+    <div id="authStatus"></div>
+  </div>
 
   <div class="footer">Tag Line • Seamless Access</div>
 </div>
 
 <script>
+  const SUPABASE_URL = 'https://ylbqwgigsvdrglgjcpyu.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsYnF3Z2lnc3ZkcmdsZ2pjcHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDQ1OTUsImV4cCI6MjEwODIyMDU5NX0.VjhL9UjElDZTdyjM3tX7qnk-8U_Qgrehq6yxkeVLELw';
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   // Mobile Menu Toggle Script
   const menuToggle = document.getElementById('menuToggle');
   const navLinksEl = document.getElementById('navLinks');
@@ -123,20 +202,6 @@ a{text-decoration:none;color:inherit}
       menuToggle.textContent = navLinksEl.classList.contains('active') ? '✕' : '☰';
     });
   }
-
-  // 1. Route Security Check
-  let user = null;
-  try {
-    user = JSON.parse(localStorage.getItem('cv_user') || 'null');
-  } catch(e) { user = null; }
-
-  if (!user) {
-    window.location.href = 'login.html';
-  }
-
-  const SUPABASE_URL = 'https://ylbqwgigsvdrglgjcpyu.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsYnF3Z2lnc3ZkcmdsZ2pjcHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDQ1OTUsImV4cCI6MjEwODIyMDU5NX0.VjhL9UjElDZTdyjM3tX7qnk-8U_Qgrehq6yxkeVLELw';
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   function showToast(badgeText, title, icon = '✦') {
     let container = document.getElementById('toastContainer');
@@ -152,10 +217,10 @@ a{text-decoration:none;color:inherit}
     toast.className = 'cv-toast';
     
     toast.innerHTML = `
-      <div class="cv-toast-icon">${icon}</div>
+      <div class="cv-toast-icon">${esc(icon)}</div>
       <div class="cv-toast-content">
-        <div class="cv-toast-tag">${badgeText}</div>
-        <div class="cv-toast-title">${title}</div>
+        <div class="cv-toast-tag">${esc(badgeText)}</div>
+        <div class="cv-toast-title">${esc(title)}</div>
         <div class="cv-toast-time">${now}</div>
       </div>
       <button class="cv-toast-close" onclick="this.parentElement.remove()">×</button>
@@ -169,6 +234,7 @@ a{text-decoration:none;color:inherit}
     }, 5000);
   }
 
+  // Check for pending redirects
   const pendingToast = JSON.parse(sessionStorage.getItem('cv_flash_toast') || 'null');
   if (pendingToast) {
     showToast(pendingToast.tag, pendingToast.msg, pendingToast.icon);
@@ -176,30 +242,38 @@ a{text-decoration:none;color:inherit}
   }
 
   function renderNavbar() {
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) { user = null; }
+
     const nav = document.getElementById('navLinks');
     if (!nav) return;
 
-    const isOrganizer = user && (user.role === 'organizer' || user.is_organizer === true);
+    if (!user) {
+      nav.innerHTML = `<a href="index.html">Discover</a><a href="login.html" class="active">Login</a>`;
+      return;
+    }
+
+    const isOrganizer = user.role === 'organizer' || user.is_organizer === true;
 
     if (isOrganizer) {
       nav.innerHTML = `
         <a href="index.html">Discover</a>
-        <a href="tickets.html" class="active">My Tickets</a>
-        <a href="organizers.html">Organizers</a>
-        <a href="organizer_dashboard.html">Dashboard</a>
+        <a href="organizer_dashboard.html">My Dashboard</a>
         <a href="organizer.html">＋ Create Event</a>
         <a href="verify.html">Scan Tickets</a>
-        <a href="#" onclick="logout()" class="logout-btn">Logout (${esc(user.nickname || user.name || 'User')})</a>
+        <a href="#" onclick="logout()" class="logout-btn">Logout (${esc(user.nickname || user.name)})</a>
       `;
     } else {
       nav.innerHTML = `
         <a href="index.html">Discover</a>
-        <a href="tickets.html" class="active">My Tickets</a>
+        <a href="tickets.html">My Tickets</a>
         <a href="organizers.html">Organizers</a>
-        <a href="#" onclick="logout()" class="logout-btn">Logout (${esc(user.nickname || user.name || 'User')})</a>
+        <a href="#" onclick="logout()" class="logout-btn">Logout (${esc(user.nickname || user.name)})</a>
       `;
     }
   }
+
+  function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
   function logout() {
     localStorage.removeItem('cv_user');
@@ -209,93 +283,143 @@ a{text-decoration:none;color:inherit}
       msg: 'Logged out successfully.',
       icon: '🔒'
     }));
-    window.location.href = 'index.html';
-  }
-
-  function niceDate(d){ return !d ? 'Date TBA' : new Date(d+'T12:00:00').toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'}); }
-  function money(n){ return Number(n)===0?'Free':'₦'+Number(n).toLocaleString('en-NG'); }
-  function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
-  async function renderTickets(){
-    let box = document.getElementById('ticketList');
-    box.innerHTML = '<div class="empty">Loading your passes...</div>';
-
-    let localTickets = JSON.parse(localStorage.getItem('cv_tickets') || '[]');
-
-    let dbTickets = [];
-    if (user && user.id) {
-      const { data, error } = await supabaseClient
-        .from('tickets')
-        .select('*, events(*)')
-        .eq('user_id', user.id);
-
-      if (!error && data) {
-        dbTickets = data.map(t => ({
-          id: t.id,
-          user_id: t.user_id,
-          name: t.events ? t.events.name : (t.tier_name ? `Event Pass (${t.tier_name})` : 'Event Pass'),
-          date: t.events ? t.events.date : '',
-          venue: t.events ? t.events.venue : 'Venue TBA',
-          campus: t.events ? t.events.campus : '',
-          tier_name: t.tier_name || 'Regular Pass',
-          price: t.price || 0,
-          status: t.status || 'valid'
-        }));
-      }
-    }
-
-    const combinedMap = new Map();
-    localTickets.forEach(t => combinedMap.set(t.id, t));
-    dbTickets.forEach(t => combinedMap.set(t.id, t));
-    const finalTickets = Array.from(combinedMap.values());
-
-    if(!finalTickets.length){
-      box.innerHTML = '<div class="empty">No passes or tables booked yet. Check out events on the <a href="index.html" style="color:var(--accent)">Discover</a> page!</div>';
-      return;
-    }
-
-    box.innerHTML = finalTickets.slice().reverse().map(t=>`
-      <div class="ticket" onclick="window.location.href='ticket.html?id=${encodeURIComponent(t.id)}'">
-        <div class="ticketlogo">
-          <span>TAGLINE / ENTRY PASS</span>
-          <span class="badge ${t.status === 'used' ? 'used' : 'valid'}">${t.status === 'used' ? 'USED' : 'VALID'}</span>
-        </div>
-        <h2 style="margin:0 0 6px">${esc(t.name)}</h2>
-        <div class="tier-badge">🏷️ ${esc(t.tier_name || 'Regular Pass')} • ${money(t.price || 0)}</div>
-        <p style="margin:12px 0 0;color:#444">
-          📅 ${niceDate(t.date)}<br>
-          📍 ${esc(t.venue)}<br>
-          🎓 ${esc(t.campus)}<br>
-          Reference Code: <strong>${esc(t.id)}</strong>
-        </p>
-      </div>`).join('');
-  }
-  function downloadPass(ticketId) {
-    const cardEl = document.getElementById('ticketCard-' + ticketId);
-    if (!cardEl) return;
-
-    showToast('PREPARING DOWNLOAD', 'Generating high-res pass image...', '📥');
-
-    const btn = cardEl.querySelector('.download-btn');
-    if (btn) btn.style.display = 'none';
-
-    html2canvas(cardEl, { scale: 3, backgroundColor: '#ffffff' }).then(canvas => {
-      if (btn) btn.style.display = 'block';
-
-      const link = document.createElement('a');
-      link.download = `TagLine-Pass-${ticketId}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      
-      showToast('DOWNLOAD COMPLETE', 'Pass saved to your device!', '✅');
-    }).catch(err => {
-      if (btn) btn.style.display = 'block';
-      showToast('DOWNLOAD ERROR', 'Could not generate pass image.', '⚠️');
-    });
+    window.location.href = 'login.html';
   }
 
   renderNavbar();
-  renderTickets();
+
+  function switchForm(type) {
+    const isLogin = type === 'login';
+    document.getElementById('loginForm').classList.toggle('hidden', !isLogin);
+    document.getElementById('signupForm').classList.toggle('hidden', isLogin);
+    document.getElementById('loginTabBtn').classList.toggle('active', isLogin);
+    document.getElementById('signupTabBtn').classList.toggle('active', !isLogin);
+    document.getElementById('authStatus').innerHTML = '';
+  }
+
+  // Handle Login
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const statusBox = document.getElementById('authStatus');
+    statusBox.innerHTML = '<div class="notice">Signing in...</div>';
+
+    let identifier = document.getElementById('loginIdentifier').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+
+    let loginEmail = identifier;
+    if (!identifier.includes('@')) {
+      let cleanPhone = identifier.replace(/\D/g, '');
+      loginEmail = `phone_${cleanPhone}@tagline.local`;
+    }
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ 
+      email: loginEmail, 
+      password 
+    });
+
+    if (error) {
+      statusBox.innerHTML = `<div class="notice warning">Error: ${error.message}</div>`;
+      return;
+    }
+
+    const userId = data.user.id;
+    const meta = data.user.user_metadata || {};
+
+    const userData = {
+      id: userId,
+      name: meta.name || 'User',
+      nickname: meta.nickname || 'Member',
+      campus: meta.campus || 'SDU, Ozoro',
+      role: meta.role || 'user'
+    };
+
+    localStorage.setItem('cv_user', JSON.stringify(userData));
+    
+    // Set Toast Banner for destination
+    sessionStorage.setItem('cv_flash_toast', JSON.stringify({
+      tag: 'AUTHENTICATION',
+      msg: 'Login successful. Welcome back!',
+      icon: '🔐'
+    }));
+
+    if (userData.role === 'organizer') {
+      window.location.href = 'organizer_dashboard.html';
+    } else {
+      window.location.href = 'index.html';
+    }
+  });
+
+  // Handle Signup
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const statusBox = document.getElementById('authStatus');
+    statusBox.innerHTML = '<div class="notice">Creating account...</div>';
+
+    const name = document.getElementById('signupName').value.trim();
+    const nickname = document.getElementById('signupNickname').value.trim();
+    const phone = document.getElementById('signupPhone').value.trim();
+    const campus = document.getElementById('signupCampus').value;
+    const role = document.getElementById('signupRole').value;
+    const optionalEmail = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value.trim();
+
+    let cleanPhone = phone.replace(/\D/g, '');
+    const authEmail = optionalEmail || `phone_${cleanPhone}@tagline.local`;
+
+    const { data, error } = await supabaseClient.auth.signUp({
+      email: authEmail,
+      password,
+      options: {
+        data: { name, nickname, phone, campus, role }
+      }
+    });
+
+    if (error) {
+      statusBox.innerHTML = `<div class="notice warning">Error: ${error.message}</div>`;
+      return;
+    }
+
+    const userId = data.user?.id;
+
+    // Insert user into Supabase profiles table for public organizer lookup
+    if (userId && role === 'organizer') {
+      await supabaseClient.from('profiles').upsert([
+        {
+          id: userId,
+          name,
+          nickname,
+          campus,
+          role,
+          verified: true,
+          bio: 'Verified Event Host on TagLine.'
+        }
+      ]);
+    }
+
+    const userData = {
+      id: userId,
+      name,
+      nickname,
+      phone,
+      campus,
+      role
+    };
+
+    localStorage.setItem('cv_user', JSON.stringify(userData));
+    
+    // Set Toast Banner for destination
+    sessionStorage.setItem('cv_flash_toast', JSON.stringify({
+      tag: 'ACCOUNT CREATED',
+      msg: 'Account created successfully. Welcome to TagLine!',
+      icon: '🎉'
+    }));
+
+    if (role === 'organizer') {
+      window.location.href = 'organizer_dashboard.html';
+    } else {
+      window.location.href = 'index.html';
+    }
+  });
 </script>
 </body>
 </html>

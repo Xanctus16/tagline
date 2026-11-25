@@ -143,10 +143,10 @@ a{text-decoration:none;color:inherit}
     toast.className = 'cv-toast';
     
     toast.innerHTML = `
-      <div class="cv-toast-icon">${icon}</div>
+      <div class="cv-toast-icon">${esc(icon)}</div>
       <div class="cv-toast-content">
-        <div class="cv-toast-tag">${badgeText}</div>
-        <div class="cv-toast-title">${title}</div>
+        <div class="cv-toast-tag">${esc(badgeText)}</div>
+        <div class="cv-toast-title">${esc(title)}</div>
         <div class="cv-toast-time">${now}</div>
       </div>
       <button class="cv-toast-close" onclick="this.parentElement.remove()">×</button>

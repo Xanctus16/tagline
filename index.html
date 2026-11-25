@@ -176,7 +176,7 @@ button:hover{filter:brightness(1.08)}
       <option>Music & Nightlife</option>
       <option>Comedy</option>
       <option>Academic Events</option>
-      <option>Pagentry & Festival</option>
+      <option>Pageantry & Festival</option>
       <option>Sports Competition</option>
       <option>House Party</option>
       <option>Campus Carnival</option>
@@ -186,7 +186,7 @@ button:hover{filter:brightness(1.08)}
       <option>Game Fest/ Tournament</option>
       <option>Departmental Events</option>
       <option>Faculty Events</option>
-      <option>Career/Serminar</option>
+      <option>Career/Seminar</option>
     </select>
   </div>
 
@@ -211,7 +211,11 @@ button:hover{filter:brightness(1.08)}
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let events = [];
-  let follows = JSON.parse(localStorage.getItem('cv_follows') || '[]');
+  // Same per-user key as organizers.html so follows stay in sync between pages
+  let followsUser = null;
+  try { followsUser = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) {}
+  const followsKey = followsUser ? `cv_follows_${followsUser.id}` : 'cv_follows_guest';
+  let follows = JSON.parse(localStorage.getItem(followsKey) || localStorage.getItem('cv_follows') || '[]');
 
   // Mobile Menu Toggle Script
   const menuToggle = document.getElementById('menuToggle');
@@ -237,10 +241,10 @@ button:hover{filter:brightness(1.08)}
     toast.className = 'cv-toast';
     
     toast.innerHTML = `
-      <div class="cv-toast-icon">${icon}</div>
+      <div class="cv-toast-icon">${esc(icon)}</div>
       <div class="cv-toast-content">
-        <div class="cv-toast-tag">${badgeText}</div>
-        <div class="cv-toast-title">${title}</div>
+        <div class="cv-toast-tag">${esc(badgeText)}</div>
+        <div class="cv-toast-title">${esc(title)}</div>
         <div class="cv-toast-time">${now}</div>
       </div>
       <button class="cv-toast-close" onclick="this.parentElement.remove()">×</button>
@@ -319,7 +323,7 @@ button:hover{filter:brightness(1.08)}
   }
 
   function saveLocal() {
-    localStorage.setItem('cv_follows', JSON.stringify(follows));
+    localStorage.setItem(followsKey, JSON.stringify(follows));
   }
 
   function niceDate(d){ if(!d)return 'Date TBA'; return new Date(d+'T12:00:00').toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'}); }
@@ -360,7 +364,7 @@ button:hover{filter:brightness(1.08)}
 
       let actionArea = user ? `
         <div class="actions">
-          <button class="secondary" onclick="toggleFollow('${escAttr(e.organizer)}')">${f?'Following':'＋ Follow'}</button>
+          <button class="secondary" onclick="toggleFollow('${esc(escAttr(e.organizer))}')">${f?'Following':'＋ Follow'}</button>
           <button onclick="eventDetails('${e.id}')">${isPast ? 'View Pass' : 'View event'}</button>
         </div>
       ` : `
@@ -392,6 +396,14 @@ button:hover{filter:brightness(1.08)}
 
   function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
   function escAttr(s){ return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+  // 8 random characters from a look-alike-free alphabet (no 0/O, 1/I)
+  function newTicketId(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const buf = new Uint32Array(8);
+    crypto.getRandomValues(buf);
+    return 'TL-' + Array.from(buf, n => chars[n % chars.length]).join('');
+  }
 
   function toggleFollow(name){
     let user = null;
@@ -498,7 +510,7 @@ button:hover{filter:brightness(1.08)}
     const selectedIndex = document.querySelector('input[name="selectedTier"]:checked')?.value || 0;
     const chosenTier = tiers[selectedIndex] || tiers[0];
 
-    const ticketId = 'TL-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+    const ticketId = newTicketId();
 
     const { error } = await supabaseClient.from('tickets').insert([
       {

@@ -150,10 +150,10 @@ button:hover,.btn:hover{filter:brightness(1.08)}
     toast.className = 'cv-toast';
     
     toast.innerHTML = `
-      <div class="cv-toast-icon">${icon}</div>
+      <div class="cv-toast-icon">${esc(icon)}</div>
       <div class="cv-toast-content">
-        <div class="cv-toast-tag">${badgeText}</div>
-        <div class="cv-toast-title">${title}</div>
+        <div class="cv-toast-tag">${esc(badgeText)}</div>
+        <div class="cv-toast-title">${esc(title)}</div>
         <div class="cv-toast-time">${now}</div>
       </div>
       <button class="cv-toast-close" onclick="this.parentElement.remove()">×</button>
@@ -256,11 +256,26 @@ button:hover,.btn:hover{filter:brightness(1.08)}
       return;
     }
 
-    // Mark ticket as used in Supabase
-    await supabaseClient
+    // Mark ticket as used. The extra .eq('status','valid') makes this atomic:
+    // if another scanner got there first, no row changes and we refuse entry.
+    const { data: updated, error: updateError } = await supabaseClient
       .from('tickets')
       .update({ status: 'used' })
-      .eq('id', code);
+      .eq('id', code)
+      .eq('status', 'valid')
+      .select('id');
+
+    if (updateError || !updated || !updated.length) {
+      resultBox.innerHTML = `
+        <h4 style="margin:0 0 4px;color:#ff7b36">⚠️ CHECK-IN NOT SAVED</h4>
+        <p style="margin:0;font-size:13px;color:var(--muted)">
+          ${updateError ? esc(updateError.message) : 'Another scanner may have just used this pass, or this account is not allowed to check in passes.'}<br>
+          Do not admit this person until it is resolved.
+        </p>
+      `;
+      showToast('CHECK-IN FAILED', `Ticket ${code} was not marked as used.`, '⚠️');
+      return;
+    }
 
     // Also sync local storage if present
     let localTickets = JSON.parse(localStorage.getItem('cv_tickets') || '[]');

@@ -174,10 +174,10 @@ button:hover{filter:brightness(1.08)}
     toast.className = 'cv-toast';
     
     toast.innerHTML = `
-      <div class="cv-toast-icon">${icon}</div>
+      <div class="cv-toast-icon">${esc(icon)}</div>
       <div class="cv-toast-content">
-        <div class="cv-toast-tag">${badgeText}</div>
-        <div class="cv-toast-title">${title}</div>
+        <div class="cv-toast-tag">${esc(badgeText)}</div>
+        <div class="cv-toast-title">${esc(title)}</div>
         <div class="cv-toast-time">${now}</div>
       </div>
       <button class="cv-toast-close" onclick="this.parentElement.remove()">×</button>
@@ -236,6 +236,14 @@ button:hover{filter:brightness(1.08)}
 
   function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
   function escAttr(s){ return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+  // 8 random characters from a look-alike-free alphabet (no 0/O, 1/I)
+  function newTicketId(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const buf = new Uint32Array(8);
+    crypto.getRandomValues(buf);
+    return 'TL-' + Array.from(buf, n => chars[n % chars.length]).join('');
+  }
   function niceDate(d){ return !d ? 'Date TBA' : new Date(d+'T12:00:00').toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'}); }
   function money(n){ return Number(n)===0?'Free':'₦'+Number(n).toLocaleString('en-NG'); }
 
@@ -316,7 +324,7 @@ button:hover{filter:brightness(1.08)}
           <span>Hosted: <strong>${orgEvents.length} Events</strong></span>
           <span style="margin-left:auto">Tap to view profile →</span>
         </div>
-        <button class="follow-btn ${isFollowing ? 'secondary' : ''}" onclick="event.stopPropagation(); toggleFollow('${escAttr(o.name)}')" style="width:100%;margin-top:6px">
+        <button class="follow-btn ${isFollowing ? 'secondary' : ''}" onclick="event.stopPropagation(); toggleFollow('${esc(escAttr(o.name))}')" style="width:100%;margin-top:6px">
           ${isFollowing ? '✓ Following' : '＋ Follow Host'}
         </button>
       `;
@@ -449,7 +457,7 @@ button:hover{filter:brightness(1.08)}
 
     document.getElementById('modalContent').innerHTML = `
       <div style="margin-bottom:12px;">
-        <button onclick="openOrganizerProfile('${escAttr(e.organizer)}')" class="secondary" style="width:auto;font-size:12px;padding:6px 12px;">← Back to Profile</button>
+        <button onclick="openOrganizerProfile('${esc(escAttr(e.organizer))}')" class="secondary" style="width:auto;font-size:12px;padding:6px 12px;">← Back to Profile</button>
       </div>
       <div class="eyebrow" style="color:#ffb38b;font-size:12px;font-weight:850;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:6px;">${esc(e.category)} • ${isPast ? 'PAST EVENT' : 'UPCOMING'}</div>
       <h2>${esc(e.name)}</h2>
@@ -523,7 +531,7 @@ button:hover{filter:brightness(1.08)}
     const selectedIndex = document.querySelector('input[name="selectedTier"]:checked')?.value || 0;
     const chosenTier = tiers[selectedIndex] || tiers[0];
 
-    const ticketId = 'TL-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+    const ticketId = newTicketId();
 
     const { error } = await supabaseClient.from('tickets').insert([
       {
