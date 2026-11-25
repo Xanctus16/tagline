@@ -14,15 +14,15 @@ button,input{font:inherit}
 button,.btn{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:750;background:var(--accent);color:#20120b}
 button.secondary,.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
 button:hover{filter:brightness(1.08)}
-.wrap{max-width:1280px;margin:auto;padding:20px;position:relative}
+.wrap{max-width:1280px;margin:0 auto;padding:20px;position:relative}
 
 .top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;position:relative}
 .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;letter-spacing:-.5px;cursor:pointer;flex-shrink:0;color:var(--text)}
 .logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#ffcb69);display:grid;place-items:center;color:#261306;font-size:21px}
 .brand small{display:block;font-size:10px;letter-spacing:1.6px;color:var(--muted);font-weight:700}
 
-/* Navigation Header */
-.nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+/* Standardized Compact Navigation Header */
+.nav{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .nav a{background:transparent;color:var(--muted);padding:8px 12px;border-radius:12px;font-weight:750;display:inline-flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;border:1px solid transparent;transition:all 0.2s;white-space:nowrap;line-height:1.2}
 .nav a:hover{color:var(--text);border-color:var(--line);background:var(--panel2)}
 .nav a.active{background:var(--panel2);color:white;border-color:var(--line)}
@@ -88,8 +88,17 @@ button:hover{filter:brightness(1.08)}
 @keyframes slideOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-20px) scale(0.95); } }
 
 @media(max-width:850px){
-  .menu-toggle { display: block; }
-  .nav { display: none; flex-direction: column; position: absolute; top: 100%; left: 0; width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; z-index: 1000; }
+  .top { flex-wrap: nowrap; gap: 10px; }
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 1.1rem;
+  }
+  .nav { display: none; flex-direction: column; position: absolute; top: 100%; left: 0; width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.8); z-index: 1000; align-items: stretch; justify-content: flex-start; }
   .nav.active { display: flex; }
   .nav a { justify-content: center; padding: 12px; font-size: 14px; width: 100%; text-align: center; }
 }
@@ -102,7 +111,7 @@ button:hover{filter:brightness(1.08)}
       <div class="logo">✦</div>
       <div>Tag Line <small>SEAMLESS ACCESS</small></div>
     </a>
-    <button class="menu-toggle" id="menuToggle">☰</button>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">☰</button>
     <nav class="nav" id="navLinks"></nav>
   </header>
 
