@@ -14,7 +14,7 @@ button,input,select{font:inherit}
 button,.btn{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:750;background:var(--accent);color:#20120b;display:inline-block;text-align:center;transition:filter 0.2s}
 button.secondary,.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
 button:hover,.btn:hover{filter:brightness(1.08)}
-.wrap{max-width:1280px;margin:auto;padding:20px;position:relative}
+.wrap{max-width:1280px;margin:0 auto;padding:20px;position:relative}
 
 .top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;position:relative}
 .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;letter-spacing:-.5px;cursor:pointer;flex-shrink:0;color:var(--text)}
@@ -22,7 +22,7 @@ button:hover,.btn:hover{filter:brightness(1.08)}
 .brand small{display:block;font-size:10px;letter-spacing:1.6px;color:var(--muted);font-weight:700}
 
 /* Standardized Navigation Header */
-.nav{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .nav a{background:transparent;color:var(--muted);padding:8px 12px;border-radius:12px;font-weight:750;display:inline-flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;border:1px solid transparent;transition:all 0.2s;white-space:nowrap;line-height:1.2}
 .nav a:hover{color:var(--text);border-color:var(--line);background:var(--panel2)}
 .nav a.active{background:var(--panel2);color:white;border-color:var(--line)}
@@ -44,6 +44,7 @@ button:hover,.btn:hover{filter:brightness(1.08)}
 .sectionhead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:28px 0 14px}
 .sectionhead h2{margin:0;font-size:24px;letter-spacing:-.7px}
 .sectionhead p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.sectionhead a, .sectionhead button { white-space: nowrap; flex-shrink: 0; }
 
 /* Dashboard 2-Column Sidebar Layout */
 .dashboard-layout{display:grid;grid-template-columns:310px 1fr;gap:24px;margin-top:20px}
@@ -120,7 +121,16 @@ button:hover,.btn:hover{filter:brightness(1.08)}
 
 /* Mobile Navigation Breakpoint & Hamburger Menu Styles */
 @media(max-width:880px){
-  .menu-toggle { display: block; }
+  .top { flex-wrap: nowrap; gap: 10px; }
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 1.1rem;
+  }
   .nav {
     display: none;
     flex-direction: column;
@@ -139,6 +149,8 @@ button:hover,.btn:hover{filter:brightness(1.08)}
   }
   .nav.active { display: flex; }
   .nav a { justify-content: center; padding: 12px; font-size: 14px; width: 100%; text-align: center; }
+  .sectionhead { flex-direction: column; align-items: flex-start; }
+  .sectionhead > a, .sectionhead > a button { width: 100%; }
   .dashboard-layout{grid-template-columns:1fr}
   .profile-card{position:static}
 }
