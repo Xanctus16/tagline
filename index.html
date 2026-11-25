@@ -95,7 +95,16 @@ button:hover{filter:brightness(1.08)}
 
 /* Mobile Navigation Breakpoint & Hamburger Menu Styles */
 @media(max-width:850px){
-  .menu-toggle { display: block; }
+  .top { flex-wrap: nowrap; gap: 10px; }
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 1.1rem;
+  }
   .nav {
     display: none;
     flex-direction: column;
