@@ -12,8 +12,8 @@ body{margin:0;background:radial-gradient(circle at 80% 0,#25204d 0,transparent 3
 a{text-decoration:none}
 button,input,select{font:inherit}
 button{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:750;background:var(--accent);color:#20120b}
-.wrap{max-width:1280px;margin:auto;padding:20px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0}
+.wrap{max-width:1280px;margin:0 auto;padding:20px;position:relative}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;position:relative}
 .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;letter-spacing:-.5px;cursor:pointer;flex-shrink:0;color:var(--text)}
 .logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#ffcb69);display:grid;place-items:center;color:#261306;font-size:21px}
 .brand small{display:block;font-size:10px;letter-spacing:1.6px;color:var(--muted);font-weight:700}
@@ -25,6 +25,18 @@ button{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:
 .nav a.active{background:var(--panel2);color:white;border-color:var(--line)}
 .nav a.logout-btn{color:#ffb38b;border-color:rgba(255,123,54,0.2)}
 .nav a.logout-btn:hover{background:rgba(255,123,54,0.1)}
+
+/* Mobile Hamburger Toggle Button */
+.menu-toggle {
+  display: none;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 1.25rem;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
 
 .sectionhead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:28px 0 14px}
 .sectionhead h2{margin:0;font-size:24px;letter-spacing:-.7px}
@@ -52,6 +64,38 @@ button{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:
 .cv-toast-close { background: transparent; border: 0; color: var(--muted); font-size: 18px; padding: 0; cursor: pointer; line-height: 1; }
 @keyframes slideIn { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes slideOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-20px) scale(0.95); } }
+
+/* Mobile Navigation Breakpoint */
+@media(max-width:850px){
+  .top { flex-wrap: nowrap; gap: 10px; }
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 1.1rem;
+  }
+  .nav {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+    z-index: 1000;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+  .nav.active { display: flex; }
+  .nav a { justify-content: center; padding: 12px; font-size: 14px; width: 100%; text-align: center; }
+}
 </style>
 </head>
 <body>
@@ -61,6 +105,7 @@ button{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:
       <div class="logo">✦</div>
       <div>Tag Line <small>SEAMLESS PASS. YOUR SCENE.</small></div>
     </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">☰</button>
     <nav class="nav" id="navLinks"></nav>
   </header>
 
@@ -82,6 +127,16 @@ button{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:
   const SUPABASE_URL = 'https://ylbqwgigsvdrglgjcpyu.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsYnF3Z2lnc3ZkcmdsZ2pjcHl1Iiwicm9sZSI6InVzZXIiLCJpYXQiOjE3OTI2NDQ1OTUsImV4cCI6MjEwODIyMDU5NX0.VjhL9UjElDZTdyjM3tX7qnk-8U_Qgrehq6yxkeVLELw';
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Mobile Menu Toggle Script
+  const menuToggle = document.getElementById('menuToggle');
+  const navLinksEl = document.getElementById('navLinks');
+  if (menuToggle && navLinksEl) {
+    menuToggle.addEventListener('click', () => {
+      navLinksEl.classList.toggle('active');
+      menuToggle.textContent = navLinksEl.classList.contains('active') ? '✕' : '☰';
+    });
+  }
 
   function showToast(badgeText, title, icon = '✦') {
     let container = document.getElementById('toastContainer');
