@@ -237,7 +237,9 @@ button:hover,.btn:hover{filter:brightness(1.08)}
     }
 
     if (!plain.data) {
-      return { ticket: null, error: joined.error || null };
+      // the plain query worked and found nothing, so the code does not exist
+      // (joined.error only says the events join is unavailable, not that the lookup failed)
+      return { ticket: null, error: null };
     }
 
     let eventObj = null;
