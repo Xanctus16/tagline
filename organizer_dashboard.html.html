@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tag Line — Organizer Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0c1020;--panel:#151b30;--panel2:#1c2440;--text:#f4f6ff;--muted:#aeb8d4;--accent:#ff7b36;--accent2:#8c7bff;--green:#61d6a4;--line:#2b3454}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 80% 0,#25204d 0,transparent 35%),var(--bg);font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--text);min-height:100vh}
+a{text-decoration:none}
+button,input,select{font:inherit}
+button,.btn{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:750;background:var(--accent);color:#20120b;display:inline-block;text-align:center;transition:filter 0.2s}
+button.secondary,.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+button:hover,.btn:hover{filter:brightness(1.08)}
+.wrap{max-width:1280px;margin:0 auto;padding:20px;position:relative}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;position:relative}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;letter-spacing:-.5px;cursor:pointer;flex-shrink:0;color:var(--text)}
+.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#ffcb69);display:grid;place-items:center;color:#261306;font-size:21px}
+.brand small{display:block;font-size:10px;letter-spacing:1.6px;color:var(--muted);font-weight:700}
+
+/* Standardized Navigation Header */
+.nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.nav a{background:transparent;color:var(--muted);padding:8px 12px;border-radius:12px;font-weight:750;display:inline-flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;border:1px solid transparent;transition:all 0.2s;white-space:nowrap;line-height:1.2}
+.nav a:hover{color:var(--text);border-color:var(--line);background:var(--panel2)}
+.nav a.active{background:var(--panel2);color:white;border-color:var(--line)}
+.nav a.logout-btn{color:#ffb38b;border-color:rgba(255,123,54,0.2)}
+.nav a.logout-btn:hover{background:rgba(255,123,54,0.1)}
+
+/* Mobile Hamburger Toggle Button */
+.menu-toggle {
+  display: none;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 1.25rem;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.sectionhead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:28px 0 14px}
+.sectionhead h2{margin:0;font-size:24px;letter-spacing:-.7px}
+.sectionhead p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.sectionhead a, .sectionhead button { white-space: nowrap; flex-shrink: 0; }
+
+/* Dashboard 2-Column Sidebar Layout */
+.dashboard-layout{display:grid;grid-template-columns:310px 1fr;gap:24px;margin-top:20px}
+
+/* Left Sidebar Profile Card */
+.profile-card{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;height:fit-content;position:sticky;top:20px}
+.avatar{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#ffcb69);display:grid;place-items:center;font-size:36px;font-weight:900;color:#20120b;border:3px solid var(--panel2);box-shadow:0 8px 24px rgba(255,123,54,0.25)}
+.profile-info{display:flex;flex-direction:column;gap:4px;width:100%}
+.profile-info h3{margin:0;font-size:21px;letter-spacing:-.5px;font-weight:850}
+.profile-info .email{font-size:13px;color:var(--muted);word-break:break-all;font-weight:500}
+.profile-badges{display:flex;flex-direction:column;gap:10px;width:100%;margin-top:6px}
+
+/* Verified Organizer Badge */
+.badge-verified{background:rgba(97,214,164,0.12);color:var(--green);border:1px solid rgba(97,214,164,0.3);border-radius:999px;padding:7px 14px;font-size:11px;font-weight:800;letter-spacing:0.6px;display:flex;align-items:center;justify-content:center;gap:6px}
+
+/* Institution Badge */
+.badge-campus{
+  background:linear-gradient(135deg, rgba(255,123,54,0.18), rgba(140,123,255,0.18));
+  color:#f4f6ff;
+  border:1.5px solid rgba(255,123,54,0.4);
+  border-radius:16px;
+  padding:10px 16px;
+  font-size:13px;
+  font-weight:800;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.25);
+  letter-spacing:-.2px;
+}
+.badge-campus-icon{
+  background:linear-gradient(135deg,var(--accent),#ffcb69);
+  color:#20120b;
+  width:22px;
+  height:22px;
+  border-radius:6px;
+  display:grid;
+  place-items:center;
+  font-size:12px;
+  flex-shrink:0;
+  font-weight:900;
+}
+
+/* Metrics Cards Grid */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:6px}
+.stat-card .num{font-size:26px;font-weight:900;color:var(--accent)}
+.stat-card .lbl{font-size:11px;color:var(--muted);font-weight:750;text-transform:uppercase;letter-spacing:0.8px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.meta{color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:4px}
+
+.tag{display:inline-flex;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:800;width:fit-content}
+.tag.active-tag{background:rgba(97,214,164,0.15);color:var(--green)}
+.tag.past-tag{background:rgba(255,255,255,0.08);color:var(--muted)}
+
+.empty{padding:40px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:20px;grid-column:1/-1}
+.footer{color:#7782a4;font-size:12px;text-align:center;padding:40px 0 10px}
+
+/* Toast Notification Banner */
+.cv-toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+.cv-toast { pointer-events: auto; background: rgba(21, 27, 48, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 18px; padding: 14px 18px; min-width: 300px; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: flex-start; gap: 12px; animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; position: relative; }
+.cv-toast-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--line); display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+.cv-toast-content { flex: 1; }
+.cv-toast-tag { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--green); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+.cv-toast-tag::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; box-shadow: 0 0 8px var(--green); }
+.cv-toast-title { font-size: 13px; font-weight: 700; color: var(--text); margin: 0 0 2px 0; }
+.cv-toast-time { font-size: 10px; color: var(--muted); font-weight: 600; }
+.cv-toast-close { background: transparent; border: 0; color: var(--muted); font-size: 18px; padding: 0; cursor: pointer; line-height: 1; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes slideOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-20px) scale(0.95); } }
+
+/* Mobile Navigation Breakpoint & Hamburger Menu Styles */
+@media(max-width:880px){
+  .top { flex-wrap: nowrap; gap: 10px; }
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 1.1rem;
+  }
+  .nav {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+    z-index: 1000;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+  .nav.active { display: flex; }
+  .nav a { justify-content: center; padding: 12px; font-size: 14px; width: 100%; text-align: center; }
+  .sectionhead { flex-direction: column; align-items: flex-start; }
+  .sectionhead > a, .sectionhead > a button { width: 100%; }
+  .dashboard-layout{grid-template-columns:1fr}
+  .profile-card{position:static}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a href="index.html" class="brand">
+      <div class="logo">✦</div>
+      <div>Tag Line <small>SEAMLESS ACCESS</small></div>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">☰</button>
+    <nav class="nav" id="navLinks"></nav>
+  </header>
+
+  <div class="dashboard-layout">
+    <!-- LEFT SIDEBAR: ORGANIZER PROFILE -->
+    <aside class="profile-card" id="profileSidebar">
+      <div class="avatar" id="profAvatar">✦</div>
+      <div class="profile-info">
+        <h3 id="profNickname">Organizer</h3>
+        <span class="email" id="profEmail">Loading email...</span>
+      </div>
+      <div class="profile-badges">
+        <div class="badge-verified">✦ VERIFIED ORGANIZER</div>
+        <div class="badge-campus" id="profCampus">
+          <span class="badge-campus-icon">🏛️</span>
+          <span id="profCampusText">Main Campus</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT MAIN CONTENT: ANALYTICS & EVENTS -->
+    <main>
+      <div class="sectionhead" style="margin-top:0">
+        <div>
+          <h2>Organizer Dashboard</h2>
+          <p>Real-time analytics and event overview for your hosted campus events.</p>
+        </div>
+        <a href="organizer.html"><button>Host New Event</button></a>
+      </div>
+
+      <!-- Analytics Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="lbl">Hosted Events</span>
+          <span class="num" id="statEvents">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="lbl">Passes Reserved</span>
+          <span class="num" id="statTickets">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="lbl">Total Revenue</span>
+          <span class="num" id="statRevenue">₦0</span>
+        </div>
+      </div>
+
+      <div class="sectionhead">
+        <div>
+          <h3>Your Hosted Events</h3>
+          <p>Manage listings and trigger entrance ticket verification.</p>
+        </div>
+      </div>
+
+      <div class="grid" id="myEventsGrid"></div>
+    </main>
+  </div>
+
+  <div class="footer">Tag Line • Seamless Access</div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://ylbqwgigsvdrglgjcpyu.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsYnF3Z2lnc3ZkcmdsZ2pjcHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDQ1OTUsImV4cCI6MjEwODIyMDU5NX0.VjhL9UjElDZTdyjM3tX7qnk-8U_Qgrehq6yxkeVLELw';
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Mobile Menu Toggle Script
+  const menuToggle = document.getElementById('menuToggle');
+  const navLinksEl = document.getElementById('navLinks');
+  if (menuToggle && navLinksEl) {
+    menuToggle.addEventListener('click', () => {
+      navLinksEl.classList.toggle('active');
+      menuToggle.textContent = navLinksEl.classList.contains('active') ? '✕' : '☰';
+    });
+  }
+
+  function showToast(badgeText, title, icon = '✦') {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.className = 'cv-toast-container';
+      document.body.appendChild(container);
+    }
+
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const toast = document.createElement('div');
+    toast.className = 'cv-toast';
+    
+    toast.innerHTML = `
+      <div class="cv-toast-icon">${esc(icon)}</div>
+      <div class="cv-toast-content">
+        <div class="cv-toast-tag">${esc(badgeText)}</div>
+        <div class="cv-toast-title">${esc(title)}</div>
+        <div class="cv-toast-time">${now}</div>
+      </div>
+      <button class="cv-toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.animation = 'slideOut 0.3s forwards';
+      setTimeout(() => toast.remove(), 300);
+    }, 5000);
+  }
+
+  const pendingToast = JSON.parse(sessionStorage.getItem('cv_flash_toast') || 'null');
+  if (pendingToast) {
+    showToast(pendingToast.tag, pendingToast.msg, pendingToast.icon);
+    sessionStorage.removeItem('cv_flash_toast');
+  }
+
+  function isPastEvent(eventDateStr) {
+    if (!eventDateStr) return false;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const eventDate = new Date(eventDateStr + 'T23:59:59');
+    return eventDate < today;
+  }
+
+  async function renderNavbar() {
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) { user = null; }
+
+    if (!user || user.role !== 'organizer') {
+      sessionStorage.setItem('cv_flash_toast', JSON.stringify({
+        tag: 'ACCESS RESTRICTED',
+        msg: 'Organizer account required to access dashboard.',
+        icon: '🔐'
+      }));
+      window.location.href = 'login.html';
+      return;
+    }
+
+    const nav = document.getElementById('navLinks');
+    if (!nav) return;
+
+    nav.innerHTML = `
+      <a href="index.html">Discover</a>
+      <a href="tickets.html">My Tickets</a>
+      <a href="organizers.html">Organizers</a>
+      <a href="organizer_dashboard.html" class="active">My Dashboard</a>
+      <a href="organizer.html">＋ Create Event</a>
+      <a href="verify.html">Scan Tickets</a>
+      <a href="#" onclick="logout()" class="logout-btn">Logout (${esc(user.nickname)})</a>
+    `;
+
+    // Populate Sidebar Profile Details
+    const nickname = user.nickname || user.name || 'Organizer Host';
+    const initial = nickname.charAt(0).toUpperCase();
+
+    // Dynamically retrieve true account email from Supabase session if needed
+    let dynamicEmail = user.email || '';
+    if (!dynamicEmail || dynamicEmail.includes('@campusvibe.local')) {
+      const { data: authData } = await supabaseClient.auth.getUser();
+      if (authData?.user?.email) {
+        dynamicEmail = authData.user.email;
+        user.email = dynamicEmail;
+        localStorage.setItem('cv_user', JSON.stringify(user));
+      }
+    }
+
+    if (!dynamicEmail || dynamicEmail.includes('@campusvibe.local')) {
+      dynamicEmail = user.phone ? `Phone: ${user.phone}` : `${nickname.toLowerCase()}@campusvibe.com`;
+    }
+
+    document.getElementById('profAvatar').textContent = initial;
+    document.getElementById('profNickname').textContent = nickname;
+    document.getElementById('profEmail').textContent = dynamicEmail;
+    document.getElementById('profCampusText').textContent = user.campus || 'SDU, Ozoro';
+  }
+
+  function logout() {
+    localStorage.removeItem('cv_user');
+    supabaseClient.auth.signOut();
+    sessionStorage.setItem('cv_flash_toast', JSON.stringify({
+      tag: 'AUTHENTICATION',
+      msg: 'Logged out successfully.',
+      icon: '🔒'
+    }));
+    window.location.href = 'login.html';
+  }
+
+  function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function money(n){ return Number(n)===0?'Free':'₦'+Number(n).toLocaleString('en-NG'); }
+
+  async function loadDashboard() {
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) {}
+    if (!user || user.role !== 'organizer') return; // renderNavbar() is already redirecting
+    const grid = document.getElementById('myEventsGrid');
+    grid.innerHTML = '<div class="empty">Loading your managed events...</div>';
+
+    const orgIdentifier = (user.nickname || user.name || '').toLowerCase();
+
+    // Query all events from Supabase
+    const { data: allEvents, error } = await supabaseClient
+      .from('events')
+      .select('*');
+
+    if (error) {
+      grid.innerHTML = `<div class="empty">Error fetching events: ${esc(error.message)}</div>`;
+      return;
+    }
+
+    // Filter events belonging to current organizer
+    const myEvents = (allEvents || []).filter(e => String(e.organizer || '').toLowerCase() === orgIdentifier);
+
+    grid.innerHTML = '';
+
+    if (!myEvents.length) {
+      grid.innerHTML = `<div class="empty">You have not created any events yet.<br><br><a href="organizer.html"><button>＋ Host Your First Event</button></a></div>`;
+      document.getElementById('statEvents').textContent = '0';
+      document.getElementById('statTickets').textContent = '0';
+      document.getElementById('statRevenue').textContent = '₦0';
+      return;
+    }
+
+    // Calculate total stats across organizer's events
+    const eventIds = myEvents.map(e => String(e.id));
+    const { data: allTickets } = await supabaseClient.from('tickets').select('*').in('event_id', eventIds);
+    
+    const myTickets = (allTickets || []).filter(t => eventIds.includes(String(t.event_id)));
+
+    let totalRevenue = 0;
+    myTickets.forEach(t => {
+      const matchEv = myEvents.find(e => String(e.id) === String(t.event_id));
+      if (matchEv) {
+        // Use what this ticket was actually sold for (tiers differ), fall back to the event's base price
+        totalRevenue += Number(t.price ?? matchEv.price ?? 0);
+      }
+    });
+
+    // Update Stat Cards
+    document.getElementById('statEvents').textContent = myEvents.length;
+    document.getElementById('statTickets').textContent = myTickets.length;
+    document.getElementById('statRevenue').textContent = money(totalRevenue);
+
+    // Render Event Cards
+    myEvents.forEach(e => {
+      const ticketCount = myTickets.filter(t => String(t.event_id) === String(e.id)).length;
+      const isPast = isPastEvent(e.date);
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      card.innerHTML = `
+        <h3 style="margin:0">${esc(e.name)}</h3>
+        <div class="meta">
+          <span>📍 Venue: ${esc(e.venue)}</span>
+          <span>🎓 Campus: ${esc(e.campus)}</span>
+          <span>📅 Date: ${esc(e.date)}</span>
+          <span>🏷️ Category: ${esc(e.category)}</span>
+          <span>🎟️ Price: ${money(e.price)}</span>
+          <span>👥 Passes Booked: <strong>${ticketCount}</strong></span>
+        </div>
+        <div class="tag ${isPast ? 'past-tag' : 'active-tag'}">${isPast ? 'PAST EVENT' : 'LIVE EVENT'}</div>
+        <div style="display:flex;gap:8px;margin-top:auto;">
+          <a href="verify.html" style="flex:1"><button style="width:100%">${isPast ? 'Check Past Passes' : 'Scan Pass Codes'}</button></a>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  renderNavbar();
+  loadDashboard();
+</script>
+</body>
+</html>

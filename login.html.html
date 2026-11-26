@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tag Line — Login & Sign Up</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0c1020;--panel:#151b30;--panel2:#1c2440;--text:#f4f6ff;--muted:#aeb8d4;--accent:#ff7b36;--line:#2b3454;--green:#61d6a4}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 80% 0,#25204d 0,transparent 35%),var(--bg);font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--text);min-height:100vh;display:flex;flex-direction:column;justify-content:space-between}
+a{text-decoration:none;color:inherit}
+button,input,select{font:inherit}
+button,.btn{cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-weight:750;background:var(--accent);color:#20120b;display:inline-block;width:100%;transition:filter 0.2s}
+button:hover,.btn:hover{filter:brightness(1.08)}
+.wrap{max-width:1180px;margin:auto;padding:20px;width:100%;position:relative}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 0 22px;position:relative}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;letter-spacing:-.5px;color:var(--text)}
+.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#ffcb69);display:grid;place-items:center;color:#261306;font-size:21px}
+.brand small{display:block;font-size:10px;letter-spacing:1.6px;color:var(--muted);font-weight:700}
+
+/* Standardized Navigation Header */
+.nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.nav a{padding:10px 14px;border-radius:12px;color:var(--muted);font-weight:700;font-size:13px;transition:all 0.2s}
+.nav a:hover{color:var(--text);background:var(--panel2)}
+.nav a.active{background:var(--panel2);color:white}
+.nav a.logout-btn{color:#ffb38b;border:1px solid rgba(255,123,54,0.2)}
+.nav a.logout-btn:hover{background:rgba(255,123,54,0.1)}
+
+/* Mobile Hamburger Toggle Button */
+.menu-toggle {
+  display: none;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 1.25rem;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.auth-container{max-width:440px;margin:40px auto;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:32px;box-shadow:0 12px 30px rgba(0,0,0,0.3);width:100%}
+.tabs{display:flex;background:var(--panel2);border-radius:12px;padding:4px;margin-bottom:24px;border:1px solid var(--line)}
+.tab-btn{flex:1;background:transparent;color:var(--muted);border:0;padding:10px;border-radius:8px;font-weight:700;cursor:pointer}
+.tab-btn.active{background:var(--accent);color:#20120b}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.field label{font-size:12px;color:var(--muted);font-weight:750}
+.field input,.field select{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--text);outline:none;width:100%}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.notice{padding:12px 14px;border-radius:12px;background:#17372f;border:1px solid #286c58;color:#b9ffe5;font-size:13px;margin-top:16px;text-align:center}
+.notice.warning{background:#3b2c20;border-color:#805a35;color:#ffe0b8}
+.hidden{display:none!important}
+.footer{color:#7782a4;font-size:12px;text-align:center;padding:30px 0 10px}
+
+/* Toast Notification Styles */
+.cv-toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+.cv-toast { pointer-events: auto; background: rgba(21, 27, 48, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 18px; padding: 14px 18px; min-width: 300px; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: flex-start; gap: 12px; animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; position: relative; }
+.cv-toast-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--line); display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+.cv-toast-content { flex: 1; }
+.cv-toast-tag { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--green); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+.cv-toast-tag::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; box-shadow: 0 0 8px var(--green); }
+.cv-toast-title { font-size: 13px; font-weight: 700; color: var(--text); margin: 0 0 2px 0; }
+.cv-toast-time { font-size: 10px; color: var(--muted); font-weight: 600; }
+.cv-toast-close { background: transparent; border: 0; color: var(--muted); font-size: 18px; padding: 0; cursor: pointer; line-height: 1; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes slideOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-20px) scale(0.95); } }
+
+/* Mobile Navigation Breakpoint & Hamburger Menu Styles */
+@media(max-width:850px){
+  .top { flex-wrap: nowrap; gap: 10px; }
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 1.1rem;
+  }
+  .nav {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+    z-index: 1000;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+  .nav.active { display: flex; }
+  .nav a { justify-content: center; padding: 12px; font-size: 14px; width: 100%; text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a href="index.html" class="brand">
+      <div class="logo">✦</div>
+      <div>Tag Line <small>SEAMLESS ACCESS</small></div>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">☰</button>
+    <nav class="nav" id="navLinks">
+      <a href="index.html">Discover</a>
+      <a href="login.html" class="active">Login</a>
+    </nav>
+  </header>
+
+  <div class="auth-container">
+    <div class="tabs">
+      <button class="tab-btn active" id="loginTabBtn" onclick="switchForm('login')">Sign In</button>
+      <button class="tab-btn" id="signupTabBtn" onclick="switchForm('signup')">Sign Up</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <form id="loginForm">
+      <h2 style="margin:0 0 6px">Welcome back</h2>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 20px">Sign in with your phone number or email.</p>
+      
+      <div class="field">
+        <label>Phone number or Email</label>
+        <input type="text" id="loginIdentifier" required placeholder="e.g. 08012345678 or Xanctus@gmail.com">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" required placeholder="••••••••">
+      </div>
+      <button type="submit">Sign In</button>
+    </form>
+
+    <!-- SIGNUP FORM -->
+    <form id="signupForm" class="hidden">
+      <h2 style="margin:0 0 6px">Create an account</h2>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 20px">Join TagLine to discover events and passes.</p>
+
+      <div class="field">
+        <label>Full Name </label>
+        <input type="text" id="signupName" required placeholder="e.g. Chris XANCTUS">
+      </div>
+      <div class="field">
+        <label>Nickname </label>
+        <input type="text" id="signupNickname" required placeholder="e.g. VibeMaster or Jay">
+      </div>
+      <div class="field">
+        <label>Phone Number </label>
+        <input type="tel" id="signupPhone" required placeholder="e.g. 08012345678">
+      </div>
+      <div class="field">
+        <label>Campus </label>
+        <select id="signupCampus" required>
+         <option>SDU, Ozoro</option>
+         <option>SDU, Orerokpe</option>
+         <option>DELSU, Abraka</option>
+         <option>DOU, Asaba</option>
+         <option>FUPRE, Warri</option>
+         <option>UNIDEL, Agbor</option>
+         <option>Other / off-campus</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Account Type </label>
+        <select id="signupRole" required>
+          <option value="user">Regular User (Attendee)</option>
+          <option value="organizer">Event Organizer (Host)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="signupEmail" placeholder="Xanctus@gmail.com">
+      </div>
+      <div class="field">
+        <label>Password </label>
+        <input type="password" id="signupPassword" required minlength="6" placeholder="At least 6 characters">
+      </div>
+      <button type="submit">Create Account</button>
+    </form>
+
+    <div id="authStatus"></div>
+  </div>
+
+  <div class="footer">Tag Line • Seamless Access</div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://ylbqwgigsvdrglgjcpyu.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsYnF3Z2lnc3ZkcmdsZ2pjcHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDQ1OTUsImV4cCI6MjEwODIyMDU5NX0.VjhL9UjElDZTdyjM3tX7qnk-8U_Qgrehq6yxkeVLELw';
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Mobile Menu Toggle Script
+  const menuToggle = document.getElementById('menuToggle');
+  const navLinksEl = document.getElementById('navLinks');
+  if (menuToggle && navLinksEl) {
+    menuToggle.addEventListener('click', () => {
+      navLinksEl.classList.toggle('active');
+      menuToggle.textContent = navLinksEl.classList.contains('active') ? '✕' : '☰';
+    });
+  }
+
+  function showToast(badgeText, title, icon = '✦') {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.className = 'cv-toast-container';
+      document.body.appendChild(container);
+    }
+
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const toast = document.createElement('div');
+    toast.className = 'cv-toast';
+    
+    toast.innerHTML = `
+      <div class="cv-toast-icon">${esc(icon)}</div>
+      <div class="cv-toast-content">
+        <div class="cv-toast-tag">${esc(badgeText)}</div>
+        <div class="cv-toast-title">${esc(title)}</div>
+        <div class="cv-toast-time">${now}</div>
+      </div>
+      <button class="cv-toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.animation = 'slideOut 0.3s forwards';
+      setTimeout(() => toast.remove(), 300);
+    }, 5000);
+  }
+
+  // Check for pending redirects
+  const pendingToast = JSON.parse(sessionStorage.getItem('cv_flash_toast') || 'null');
+  if (pendingToast) {
+    showToast(pendingToast.tag, pendingToast.msg, pendingToast.icon);
+    sessionStorage.removeItem('cv_flash_toast');
+  }
+
+  function renderNavbar() {
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) { user = null; }
+
+    const nav = document.getElementById('navLinks');
+    if (!nav) return;
+
+    if (!user) {
+      nav.innerHTML = `<a href="index.html">Discover</a><a href="login.html" class="active">Login</a>`;
+      return;
+    }
+
+    const isOrganizer = user.role === 'organizer' || user.is_organizer === true;
+
+    if (isOrganizer) {
+      nav.innerHTML = `
+        <a href="index.html">Discover</a>
+        <a href="organizer_dashboard.html">My Dashboard</a>
+        <a href="organizer.html">＋ Create Event</a>
+        <a href="verify.html">Scan Tickets</a>
+        <a href="#" onclick="logout()" class="logout-btn">Logout (${esc(user.nickname || user.name)})</a>
+      `;
+    } else {
+      nav.innerHTML = `
+        <a href="index.html">Discover</a>
+        <a href="tickets.html">My Tickets</a>
+        <a href="organizers.html">Organizers</a>
+        <a href="#" onclick="logout()" class="logout-btn">Logout (${esc(user.nickname || user.name)})</a>
+      `;
+    }
+  }
+
+  function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  function logout() {
+    localStorage.removeItem('cv_user');
+    supabaseClient.auth.signOut();
+    sessionStorage.setItem('cv_flash_toast', JSON.stringify({
+      tag: 'AUTHENTICATION',
+      msg: 'Logged out successfully.',
+      icon: '🔒'
+    }));
+    window.location.href = 'login.html';
+  }
+
+  renderNavbar();
+
+  function switchForm(type) {
+    const isLogin = type === 'login';
+    document.getElementById('loginForm').classList.toggle('hidden', !isLogin);
+    document.getElementById('signupForm').classList.toggle('hidden', isLogin);
+    document.getElementById('loginTabBtn').classList.toggle('active', isLogin);
+    document.getElementById('signupTabBtn').classList.toggle('active', !isLogin);
+    document.getElementById('authStatus').innerHTML = '';
+  }
+
+  // Handle Login
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const statusBox = document.getElementById('authStatus');
+    statusBox.innerHTML = '<div class="notice">Signing in...</div>';
+
+    let identifier = document.getElementById('loginIdentifier').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+
+    let loginEmail = identifier;
+    if (!identifier.includes('@')) {
+      let cleanPhone = identifier.replace(/\D/g, '');
+      loginEmail = `phone_${cleanPhone}@tagline.local`;
+    }
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ 
+      email: loginEmail, 
+      password 
+    });
+
+    if (error) {
+      statusBox.innerHTML = `<div class="notice warning">Error: ${error.message}</div>`;
+      return;
+    }
+
+    const userId = data.user.id;
+    const meta = data.user.user_metadata || {};
+
+    const userData = {
+      id: userId,
+      name: meta.name || 'User',
+      nickname: meta.nickname || 'Member',
+      campus: meta.campus || 'SDU, Ozoro',
+      role: meta.role || 'user'
+    };
+
+    localStorage.setItem('cv_user', JSON.stringify(userData));
+    
+    // Set Toast Banner for destination
+    sessionStorage.setItem('cv_flash_toast', JSON.stringify({
+      tag: 'AUTHENTICATION',
+      msg: 'Login successful. Welcome back!',
+      icon: '🔐'
+    }));
+
+    if (userData.role === 'organizer') {
+      window.location.href = 'organizer_dashboard.html';
+    } else {
+      window.location.href = 'index.html';
+    }
+  });
+
+  // Handle Signup
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const statusBox = document.getElementById('authStatus');
+    statusBox.innerHTML = '<div class="notice">Creating account...</div>';
+
+    const name = document.getElementById('signupName').value.trim();
+    const nickname = document.getElementById('signupNickname').value.trim();
+    const phone = document.getElementById('signupPhone').value.trim();
+    const campus = document.getElementById('signupCampus').value;
+    const role = document.getElementById('signupRole').value;
+    const optionalEmail = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value.trim();
+
+    let cleanPhone = phone.replace(/\D/g, '');
+    const authEmail = optionalEmail || `phone_${cleanPhone}@tagline.local`;
+
+    const { data, error } = await supabaseClient.auth.signUp({
+      email: authEmail,
+      password,
+      options: {
+        data: { name, nickname, phone, campus, role }
+      }
+    });
+
+    if (error) {
+      statusBox.innerHTML = `<div class="notice warning">Error: ${error.message}</div>`;
+      return;
+    }
+
+    const userId = data.user?.id;
+
+    // Insert user into Supabase profiles table for public organizer lookup
+    if (userId && role === 'organizer') {
+      await supabaseClient.from('profiles').upsert([
+        {
+          id: userId,
+          name,
+          nickname,
+          campus,
+          role,
+          verified: true,
+          bio: 'Verified Event Host on TagLine.'
+        }
+      ]);
+    }
+
+    const userData = {
+      id: userId,
+      name,
+      nickname,
+      phone,
+      campus,
+      role
+    };
+
+    localStorage.setItem('cv_user', JSON.stringify(userData));
+    
+    // Set Toast Banner for destination
+    sessionStorage.setItem('cv_flash_toast', JSON.stringify({
+      tag: 'ACCOUNT CREATED',
+      msg: 'Account created successfully. Welcome to TagLine!',
+      icon: '🎉'
+    }));
+
+    if (role === 'organizer') {
+      window.location.href = 'organizer_dashboard.html';
+    } else {
+      window.location.href = 'index.html';
+    }
+  });
+</script>
+</body>
+</html>

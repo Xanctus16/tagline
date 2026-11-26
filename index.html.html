@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tag Line — Discover Events & Access Tiers</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0c1020;--panel:#151b30;--panel2:#1c2440;--text:#f4f6ff;--muted:#aeb8d4;--accent:#ff7b36;--accent2:#8c7bff;--green:#61d6a4;--line:#2b3454}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 80% 0,#25204d 0,transparent 35%),var(--bg);font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--text)}
+a{text-decoration:none}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:750;background:var(--accent);color:#20120b}
+button.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+button:hover{filter:brightness(1.08)}
+.wrap{max-width:1280px;margin:auto;padding:20px;position:relative}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;position:relative}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;letter-spacing:-.5px;cursor:pointer;flex-shrink:0;color:var(--text)}
+.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#ffcb69);display:grid;place-items:center;color:#261306;font-size:21px}
+.brand small{display:block;font-size:10px;letter-spacing:1.6px;color:var(--muted);font-weight:700}
+
+/* Standardized Compact Navigation Header */
+.nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.nav a{background:transparent;color:var(--muted);padding:8px 12px;border-radius:12px;font-weight:750;display:inline-flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;border:1px solid transparent;transition:all 0.2s;white-space:nowrap;line-height:1.2}
+.nav a:hover{color:var(--text);border-color:var(--line);background:var(--panel2)}
+.nav a.active{background:var(--panel2);color:white;border-color:var(--line)}
+.nav a.logout-btn{color:#ffb38b;border-color:rgba(255,123,54,0.2)}
+.nav a.logout-btn:hover{background:rgba(255,123,54,0.1)}
+
+/* Mobile Hamburger Toggle Button */
+.menu-toggle {
+  display: none;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 1.25rem;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.hero{padding:28px;border:1px solid #343558;border-radius:26px;background:linear-gradient(115deg,rgba(255,123,54,.17),rgba(140,123,255,.16)),var(--panel);display:grid;grid-template-columns:1.4fr .8fr;gap:24px;align-items:center}
+.eyebrow{color:#ffb38b;font-size:12px;font-weight:850;letter-spacing:1.8px;text-transform:uppercase}
+.hero h1{font-size:clamp(30px,5vw,54px);line-height:1.03;letter-spacing:-2px;margin:12px 0}
+.hero p{color:var(--muted);line-height:1.6;max-width:620px}
+.hero-art{min-height:190px;border-radius:20px;background:linear-gradient(135deg,#ff7b36,#ffbd68 42%,#8c7bff 43%,#332c71);padding:18px;display:flex;align-items:end;position:relative;overflow:hidden}
+.hero-art div{position:relative;background:#17142ad9;padding:14px 16px;border-radius:14px;font-weight:800}
+
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0}
+.filters input,.filters select{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--text);outline:none}
+.filters input{flex:1;min-width:190px}
+.filters select{min-width:145px}
+
+.sectionhead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:28px 0 14px}
+.sectionhead h2{margin:0;font-size:24px;letter-spacing:-.7px}
+.sectionhead p{margin:5px 0 0;color:var(--muted);font-size:13px}
+
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.poster{height:150px;padding:16px;display:flex;align-items:end;position:relative;overflow:hidden;background:linear-gradient(135deg,#fd7b4c,#e43f76)}
+.poster span{position:relative;font-size:21px;font-weight:950;max-width:85%;line-height:1.05;text-shadow:0 2px 8px #0004}
+.cardbody{padding:15px;display:flex;flex-direction:column;gap:10px;flex:1}
+.meta{color:var(--muted);font-size:12px;display:flex;gap:8px;flex-wrap:wrap}
+.card h3{margin:0;font-size:18px}
+.desc{color:var(--muted);font-size:13px;line-height:1.45;margin:0}
+.cardfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding-top:4px}
+.price{font-weight:900}
+.tag{display:inline-flex;background:#282b4a;color:#d9d7ff;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800}
+.tag.past-tag{background:rgba(255,255,255,0.08);color:var(--muted)}
+.tag.active-tag{background:rgba(97,214,164,0.15);color:var(--green)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.box{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px}
+.footer{color:#7782a4;font-size:12px;text-align:center;padding:30px 0 10px}
+.empty{padding:32px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px}
+.modal{position:fixed;inset:0;background:#050711d9;display:grid;place-items:center;padding:18px;z-index:1000}
+.modalbox{max-width:520px;width:100%;max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:22px}
+.close{float:right;background:transparent;color:var(--muted);font-size:24px;padding:0 5px;border:0;cursor:pointer}
+.hidden{display:none!important}
+
+/* Toast Notification Banner */
+.cv-toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+.cv-toast { pointer-events: auto; background: rgba(21, 27, 48, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 18px; padding: 14px 18px; min-width: 300px; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: flex-start; gap: 12px; animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; position: relative; }
+.cv-toast-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--line); display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+.cv-toast-content { flex: 1; }
+.cv-toast-tag { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--green); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+.cv-toast-tag::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; box-shadow: 0 0 8px var(--green); }
+.cv-toast-title { font-size: 13px; font-weight: 700; color: var(--text); margin: 0 0 2px 0; }
+.cv-toast-time { font-size: 10px; color: var(--muted); font-weight: 600; }
+.cv-toast-close { background: transparent; border: 0; color: var(--muted); font-size: 18px; padding: 0; cursor: pointer; line-height: 1; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes slideOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-20px) scale(0.95); } }
+
+/* Mobile Navigation Breakpoint & Hamburger Menu Styles */
+@media(max-width:850px){
+  .top { flex-wrap: nowrap; gap: 10px; }
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 1.1rem;
+  }
+  .nav {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+    z-index: 1000;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+  .nav.active { display: flex; }
+  .nav a { justify-content: center; padding: 12px; font-size: 14px; width: 100%; }
+  .hero{grid-template-columns:1fr}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:520px){
+  .wrap{padding:13px}
+  .grid{grid-template-columns:1fr}
+  .poster{height:135px}
+  .hero{padding:20px}
+  .top{padding-bottom:14px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <a href="index.html" class="brand">
+    <div class="logo">✦</div>
+    <div>Tag Line <small>SEAMLESS ACCESS</small></div>
+  </a>
+  <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">☰</button>
+  <nav class="nav" id="navLinks"></nav>
+</header>
+
+<section id="discover">
+  <div class="hero">
+    <div>
+      <div class="eyebrow">Events, Nightlife & Experiences</div>
+      <h1>Find your people.<br>Catch your vibe.</h1>
+      <p>Discover comedy nights, raves, carnivals, gaming tournaments, and table packages — across campuses, clubs, and venues near you.</p>
+      <div class="actions">
+        <button onclick="document.getElementById('eventGrid').scrollIntoView({behavior:'smooth'})">Explore events ↓</button>
+      </div>
+    </div>
+    <div class="hero-art"><div>TAGLINE LIVE<br><span style="color:#ffc18f">Seamless Access Everywhere.</span></div></div>
+  </div>
+  
+  <div class="filters">
+    <input id="search" placeholder="Search events, Organizers, Campus, DJs…" oninput="renderEvents()">
+    <select id="campus" onchange="renderEvents()">
+      <option value="all">All campuses</option>
+      <option>SDU, Ozoro</option>
+      <option>SDU, Orerokpe</option>
+      <option>DELSU, Abraka</option>
+      <option>DOU, Asaba</option>
+      <option>FUPRE, Warri</option>
+      <option>UNIDEL, Agbor</option>
+      <option>Other / off-campus</option>
+    </select>
+    <select id="category" onchange="renderEvents()">
+      <option value="all">All categories</option>
+      <option>Music & Nightlife</option>
+      <option>Comedy</option>
+      <option>Academic Events</option>
+      <option>Pageantry & Festival</option>
+      <option>Sports Competition</option>
+      <option>House Party</option>
+      <option>Campus Carnival</option>
+      <option>Picnic</option>
+      <option>Rave/Carnival</option>
+      <option>Food Fest</option>
+      <option>Game Fest/ Tournament</option>
+      <option>Departmental Events</option>
+      <option>Faculty Events</option>
+      <option>Career/Seminar</option>
+    </select>
+  </div>
+
+  <div class="sectionhead">
+    <div><h2>Happening around you</h2><p>Fetched live from database.</p></div>
+    <span class="tag" id="count">0 events</span>
+  </div>
+  
+  <div class="grid" id="eventGrid"></div>
+</section>
+
+<div class="footer">TagLine • Seamless Access</div>
+</div>
+
+<div id="modal" class="modal hidden" onclick="if(event.target.id==='modal')closeModal()">
+  <div class="modalbox"><button class="close" onclick="closeModal()">×</button><div id="modalContent"></div></div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://ylbqwgigsvdrglgjcpyu.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsYnF3Z2lnc3ZkcmdsZ2pjcHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDQ1OTUsImV4cCI6MjEwODIyMDU5NX0.VjhL9UjElDZTdyjM3tX7qnk-8U_Qgrehq6yxkeVLELw';
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let events = [];
+  // Same per-user key as organizers.html so follows stay in sync between pages
+  let followsUser = null;
+  try { followsUser = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) {}
+  const followsKey = followsUser ? `cv_follows_${followsUser.id}` : 'cv_follows_guest';
+  let follows = JSON.parse(localStorage.getItem(followsKey) || localStorage.getItem('cv_follows') || '[]');
+
+  // Mobile Menu Toggle Script
+  const menuToggle = document.getElementById('menuToggle');
+  const navLinksEl = document.getElementById('navLinks');
+  if (menuToggle && navLinksEl) {
+    menuToggle.addEventListener('click', () => {
+      navLinksEl.classList.toggle('active');
+      menuToggle.textContent = navLinksEl.classList.contains('active') ? '✕' : '☰';
+    });
+  }
+
+  function showToast(badgeText, title, icon = '✦') {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.className = 'cv-toast-container';
+      document.body.appendChild(container);
+    }
+
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const toast = document.createElement('div');
+    toast.className = 'cv-toast';
+    
+    toast.innerHTML = `
+      <div class="cv-toast-icon">${esc(icon)}</div>
+      <div class="cv-toast-content">
+        <div class="cv-toast-tag">${esc(badgeText)}</div>
+        <div class="cv-toast-title">${esc(title)}</div>
+        <div class="cv-toast-time">${now}</div>
+      </div>
+      <button class="cv-toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.animation = 'slideOut 0.3s forwards';
+      setTimeout(() => toast.remove(), 300);
+    }, 5000);
+  }
+
+  const pendingToast = JSON.parse(sessionStorage.getItem('cv_flash_toast') || 'null');
+  if (pendingToast) {
+    showToast(pendingToast.tag, pendingToast.msg, pendingToast.icon);
+    sessionStorage.removeItem('cv_flash_toast');
+  }
+
+  function renderNavbar() {
+    let user = null;
+    try {
+      user = JSON.parse(localStorage.getItem('cv_user') || 'null');
+    } catch(e) { user = null; }
+
+    const nav = document.getElementById('navLinks');
+    if (!nav) return;
+
+    if (!user) {
+      nav.innerHTML = `
+        <a href="index.html" class="active">Discover</a>
+        <a href="login.html" class="logout-btn">Login</a>
+      `;
+      return;
+    }
+
+    if (user.role === 'organizer') {
+      nav.innerHTML = `
+        <a href="index.html" class="active">Discover</a>
+        <a href="tickets.html">My Tickets</a>
+        <a href="organizers.html">Organizers</a>
+        <a href="organizer_dashboard.html">My Dashboard</a>
+        <a href="organizer.html">＋ Create Event</a>
+        <a href="verify.html">Scan Tickets</a>
+        <a href="#" onclick="logout()" class="logout-btn">Logout (${esc(user.nickname)})</a>
+      `;
+    } else {
+      nav.innerHTML = `
+        <a href="index.html" class="active">Discover</a>
+        <a href="tickets.html">My Tickets</a>
+        <a href="organizers.html">Organizers</a>
+        <a href="#" onclick="logout()" class="logout-btn">Logout (${esc(user.nickname)})</a>
+      `;
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem('cv_user');
+    supabaseClient.auth.signOut();
+    sessionStorage.setItem('cv_flash_toast', JSON.stringify({
+      tag: 'AUTHENTICATION',
+      msg: 'Logged out successfully.',
+      icon: '🔒'
+    }));
+    window.location.href = 'login.html';
+  }
+
+  async function fetchEventsFromSupabase() {
+    const { data, error } = await supabaseClient.from('events').select('*');
+    if (error) {
+      console.error('Error fetching events:', error);
+    } else {
+      events = data || [];
+      renderEvents();
+    }
+  }
+
+  function saveLocal() {
+    localStorage.setItem(followsKey, JSON.stringify(follows));
+  }
+
+  function niceDate(d){ if(!d)return 'Date TBA'; return new Date(d+'T12:00:00').toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'}); }
+  function money(n){ return Number(n)===0?'Free':'₦'+Number(n).toLocaleString('en-NG'); }
+
+  function isPastEvent(eventDateStr) {
+    if (!eventDateStr) return false;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const eventDate = new Date(eventDateStr + 'T23:59:59');
+    return eventDate < today;
+  }
+
+  function renderEvents(){
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) { user = null; }
+
+    let q = (document.getElementById('search').value||'').toLowerCase();
+    let c = document.getElementById('campus').value;
+    let k = document.getElementById('category').value;
+    
+    let list = events.filter(e => (c==='all'||e.campus===c) && (k==='all'||e.category===k) && [e.name,e.campus,e.category,e.organizer,e.venue].join(' ').toLowerCase().includes(q));
+    
+    document.getElementById('count').textContent = list.length + ' events';
+    let grid = document.getElementById('eventGrid');
+    grid.innerHTML = '';
+    
+    if(!list.length){
+      grid.innerHTML = '<div class="empty" style="grid-column:1/-1">No events found matching your filter.</div>';
+      return;
+    }
+    
+    list.forEach(e => {
+      let f = follows.includes(e.organizer);
+      let isPast = isPastEvent(e.date);
+      let d = document.createElement('article');
+      d.className = 'card';
+
+      let actionArea = user ? `
+        <div class="actions">
+          <button class="secondary" onclick="toggleFollow('${esc(escAttr(e.organizer))}')">${f?'Following':'＋ Follow'}</button>
+          <button onclick="eventDetails('${e.id}')">${isPast ? 'View Pass' : 'View event'}</button>
+        </div>
+      ` : `
+        <button onclick="window.location.href='login.html'" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:#ffb38b;font-size:12px;font-weight:750;text-align:center;">
+          🔐 Login or create account first
+        </button>
+      `;
+
+      d.innerHTML = `
+        <div class="poster"><span>${esc(e.name)}</span></div>
+        <div class="cardbody">
+          <div class="meta">
+            <span>📍 ${esc(e.campus)}</span>
+            <span>•</span>
+            <span>📅 ${niceDate(e.date)}</span>
+            <span class="tag ${isPast ? 'past-tag' : 'active-tag'}" style="margin-left:auto;">${isPast ? 'PAST EVENT' : 'UPCOMING'}</span>
+          </div>
+          <h3>${esc(e.name)}</h3>
+          <p class="desc">${esc(e.desc||'Discover this event.')}</p>
+          <div class="meta"><span class="tag">${esc(e.category)}</span><span>By ${esc(e.organizer)}</span></div>
+          <div class="cardfoot">
+            <span class="price">${money(e.price)}</span>
+            ${actionArea}
+          </div>
+        </div>`;
+      grid.appendChild(d);
+    });
+  }
+
+  function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function escAttr(s){ return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+  // 8 random characters from a look-alike-free alphabet (no 0/O, 1/I)
+  function newTicketId(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const buf = new Uint32Array(8);
+    crypto.getRandomValues(buf);
+    return 'TL-' + Array.from(buf, n => chars[n % chars.length]).join('');
+  }
+
+  function toggleFollow(name){
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) { user = null; }
+
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    if(follows.includes(name)) {
+      follows = follows.filter(x=>x!==name);
+      showToast('ORGANIZER UNFOLLOWED', `You unfollowed ${name}`, '👥');
+    } else {
+      follows.push(name);
+      showToast('ORGANIZER FOLLOWED', `You are now following ${name}`, '⭐');
+    }
+    saveLocal();
+    renderEvents();
+  }
+
+  function eventDetails(id){
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) { user = null; }
+
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    let e = events.find(x => String(x.id) === String(id));
+    if(!e) return;
+
+    let isPast = isPastEvent(e.date);
+
+    document.getElementById('modalContent').innerHTML = `
+      <div class="eyebrow">${esc(e.category)} • ${isPast ? 'PAST EVENT' : 'UPCOMING'}</div>
+      <h2>${esc(e.name)}</h2>
+      <p style="color:var(--muted)">${esc(e.desc||'')}</p>
+      <div class="box" style="padding:14px;margin-bottom:14px">
+        <p style="margin:0">
+          📍 <strong>Venue:</strong> ${esc(e.venue)}<br>
+          🎓 <strong>Location:</strong> ${esc(e.campus)}<br>
+          📅 <strong>Date:</strong> ${niceDate(e.date)}<br>
+          👤 <strong>Organizer:</strong> ${esc(e.organizer)}
+        </p>
+      </div>
+      ${isPast 
+        ? `<button disabled style="width:100%;font-size:15px;background:var(--panel2);color:var(--muted);cursor:not-allowed">⌛ Event Has Ended</button>`
+        : `<button onclick="showTierSelection('${e.id}')" style="width:100%;font-size:15px">🎟️ Claim Ticket Pass</button>`
+      }`;
+    document.getElementById('modal').classList.remove('hidden');
+  }
+
+  function showTierSelection(eventId) {
+    let e = events.find(x => String(x.id) === String(eventId));
+    if (!e) return;
+
+    let tiers = e.tiers;
+    if (typeof tiers === 'string') {
+      try { tiers = JSON.parse(tiers); } catch(err) { tiers = null; }
+    }
+
+    if (!tiers || !tiers.length) {
+      tiers = [{ name: 'Regular Pass', price: e.price || 0 }];
+    }
+
+    let tierOptionsHTML = tiers.map((t, idx) => `
+      <label style="display:flex;align-items:center;justify-content:space-between;background:var(--panel2);border:1px solid var(--line);padding:12px;border-radius:12px;margin-bottom:8px;cursor:pointer;">
+        <div>
+          <input type="radio" name="selectedTier" value="${idx}" ${idx === 0 ? 'checked' : ''}>
+          <strong style="margin-left:8px;">${esc(t.name)}</strong>
+        </div>
+        <span style="color:var(--accent);font-weight:800;">${money(t.price)}</span>
+      </label>
+    `).join('');
+
+    document.getElementById('modalContent').innerHTML = `
+      <h2>Select Package / Table Tier</h2>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">Choose your pass or table tier for <strong>${esc(e.name)}</strong>:</p>
+      
+      <form onsubmit="confirmTierTicket(event, '${e.id}')">
+        <div style="margin-bottom:16px;">
+          ${tierOptionsHTML}
+        </div>
+        <button type="submit" style="width:100%;font-size:15px">Confirm & Claim Pass</button>
+      </form>
+    `;
+  }
+
+  async function confirmTierTicket(eventObj, eventId) {
+    eventObj.preventDefault();
+    let user = JSON.parse(localStorage.getItem('cv_user') || 'null');
+    let e = events.find(x => String(x.id) === String(eventId));
+
+    let tiers = e.tiers;
+    if (typeof tiers === 'string') {
+      try { tiers = JSON.parse(tiers); } catch(err) { tiers = null; }
+    }
+    if (!tiers || !tiers.length) {
+      tiers = [{ name: 'Regular Pass', price: e.price || 0 }];
+    }
+
+    const selectedIndex = document.querySelector('input[name="selectedTier"]:checked')?.value || 0;
+    const chosenTier = tiers[selectedIndex] || tiers[0];
+
+    const ticketId = newTicketId();
+
+    const { error } = await supabaseClient.from('tickets').insert([
+      {
+        id: ticketId,
+        event_id: eventId,
+        user_id: user.id,
+        user_name: user.name || user.nickname || 'Attendee',
+        tier_name: chosenTier.name,
+        price: chosenTier.price,
+        status: 'valid'
+      }
+    ]);
+
+    if (error) {
+      showToast('BOOKING ERROR', error.message, '⚠️');
+      return;
+    }
+
+    let localTickets = JSON.parse(localStorage.getItem('cv_tickets') || '[]');
+    localTickets.push({
+      id: ticketId,
+      user_id: user.id,
+      name: e.name + ' (' + chosenTier.name + ')',
+      date: e.date,
+      venue: e.venue,
+      campus: e.campus,
+      tier_name: chosenTier.name,
+      price: chosenTier.price,
+      status: 'valid'
+    });
+    localStorage.setItem('cv_tickets', JSON.stringify(localTickets));
+
+    closeModal();
+    showToast('PASS RESERVED', `Pass generated for ${chosenTier.name}! Ref: ${ticketId}`, '🎟️');
+  }
+
+  function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
+
+  renderNavbar();
+  fetchEventsFromSupabase();
+</script>
+</body>
+</html>

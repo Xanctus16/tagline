@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tag Line — Event Organizers</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0c1020;--panel:#151b30;--panel2:#1c2440;--text:#f4f6ff;--muted:#aeb8d4;--accent:#ff7b36;--green:#61d6a4;--line:#2b3454;--blue:#4287f5}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 80% 0,#25204d 0,transparent 35%),var(--bg);font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--text);min-height:100vh}
+a{text-decoration:none;color:inherit}
+button,input{font:inherit}
+button,.btn{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:750;background:var(--accent);color:#20120b}
+button.secondary,.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+button:hover{filter:brightness(1.08)}
+.wrap{max-width:1280px;margin:0 auto;padding:20px;position:relative}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;position:relative}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;letter-spacing:-.5px;cursor:pointer;flex-shrink:0;color:var(--text)}
+.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#ffcb69);display:grid;place-items:center;color:#261306;font-size:21px}
+.brand small{display:block;font-size:10px;letter-spacing:1.6px;color:var(--muted);font-weight:700}
+
+/* Standardized Compact Navigation Header */
+.nav{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.nav a{background:transparent;color:var(--muted);padding:8px 12px;border-radius:12px;font-weight:750;display:inline-flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;border:1px solid transparent;transition:all 0.2s;white-space:nowrap;line-height:1.2}
+.nav a:hover{color:var(--text);border-color:var(--line);background:var(--panel2)}
+.nav a.active{background:var(--panel2);color:white;border-color:var(--line)}
+.nav a.logout-btn{color:#ffb38b;border-color:rgba(255,123,54,0.2)}
+.nav a.logout-btn:hover{background:rgba(255,123,54,0.1)}
+
+.menu-toggle {
+  display: none;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 1.25rem;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.search-bar{margin:20px 0;display:flex;gap:10px}
+.search-bar input{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;color:var(--text);outline:none;font-size:15px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:20px}
+.org-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px;cursor:pointer;transition:transform 0.2s,border-color 0.2s}
+.org-card:hover{transform:translateY(-3px);border-color:var(--accent)}
+
+.avatar{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--accent2),var(--accent));display:grid;place-items:center;font-size:24px;font-weight:900;color:#fff;flex-shrink:0}
+.verified-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(97,214,164,0.15);color:var(--green);border-radius:999px;padding:3px 8px;font-size:11px;font-weight:800}
+
+.stats-row{display:flex;gap:12px;margin-top:auto;padding-top:10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.stats-row strong{color:var(--text)}
+
+/* Profile & Event Modals */
+.modal{position:fixed;inset:0;background:#050711e6;display:grid;place-items:center;padding:18px;z-index:1000}
+.modalbox{max-width:620px;width:100%;max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:24px}
+.close{float:right;background:transparent;color:var(--muted);font-size:24px;padding:0 5px;border:0;cursor:pointer}
+.hidden{display:none!important}
+
+.profile-header{display:flex;gap:16px;align-items:center;margin-bottom:20px}
+.profile-avatar{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--accent),#ffcb69);display:grid;place-items:center;font-size:32px;font-weight:900;color:#20120b}
+
+.tab-bar{display:flex;gap:8px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:16px}
+.tab-btn{background:transparent;color:var(--muted);border:0;padding:8px 12px;border-radius:10px;font-size:13px;cursor:pointer;font-weight:700}
+.tab-btn.active{background:var(--panel2);color:var(--text)}
+
+.event-mini-card{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.event-mini-card h4{margin:0 0 4px;font-size:15px}
+.event-mini-card p{margin:0;font-size:12px;color:var(--muted)}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px}
+
+.footer{color:#7782a4;font-size:12px;text-align:center;padding:40px 0 10px}
+.empty{padding:32px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px;grid-column:1/-1}
+
+/* Toast Notification Styles */
+.cv-toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+.cv-toast { pointer-events: auto; background: rgba(21, 27, 48, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 18px; padding: 14px 18px; min-width: 300px; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: flex-start; gap: 12px; animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; position: relative; }
+.cv-toast-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--line); display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+.cv-toast-content { flex: 1; }
+.cv-toast-tag { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--green); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+.cv-toast-tag::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; box-shadow: 0 0 8px var(--green); }
+.cv-toast-title { font-size: 13px; font-weight: 700; color: var(--text); margin: 0 0 2px 0; }
+.cv-toast-time { font-size: 10px; color: var(--muted); font-weight: 600; }
+.cv-toast-close { background: transparent; border: 0; color: var(--muted); font-size: 18px; padding: 0; cursor: pointer; line-height: 1; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes slideOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-20px) scale(0.95); } }
+
+@media(max-width:850px){
+  .top { flex-wrap: nowrap; gap: 10px; }
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 1.1rem;
+  }
+  .nav { display: none; flex-direction: column; position: absolute; top: 100%; left: 0; width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.8); z-index: 1000; align-items: stretch; justify-content: flex-start; }
+  .nav.active { display: flex; }
+  .nav a { justify-content: center; padding: 12px; font-size: 14px; width: 100%; text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a href="index.html" class="brand">
+      <div class="logo">✦</div>
+      <div>Tag Line <small>SEAMLESS ACCESS</small></div>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">☰</button>
+    <nav class="nav" id="navLinks"></nav>
+  </header>
+
+  <div style="margin: 20px 0 10px">
+    <h1 style="margin:0 0 6px">Explore Event Organizers</h1>
+    <p style="color:var(--muted);margin:0;font-size:14px">Discover verified event hosts, DJs, clubs, and campus organizers.</p>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search organizer by name or campus handle..." oninput="filterOrganizers()">
+  </div>
+
+  <div class="grid" id="organizerGrid"></div>
+
+  <div class="footer">Tag Line • Seamless Access</div>
+</div>
+
+<!-- ORGANIZER PROFILE & EVENT DETAILS MODAL -->
+<div id="modal" class="modal hidden" onclick="if(event.target.id==='modal')closeModal()">
+  <div class="modalbox">
+    <button class="close" onclick="closeModal()">×</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://ylbqwgigsvdrglgjcpyu.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsYnF3Z2lnc3ZkcmdsZ2pjcHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDQ1OTUsImV4cCI6MjEwODIyMDU5NX0.VjhL9UjElDZTdyjM3tX7qnk-8U_Qgrehq6yxkeVLELw';
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let organizersList = [];
+  let allEventsList = [];
+
+  let currentUser = null;
+  try { currentUser = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) { currentUser = null; }
+
+  let followsKey = currentUser ? `cv_follows_${currentUser.id}` : 'cv_follows_guest';
+  let follows = JSON.parse(localStorage.getItem(followsKey) || '[]');
+
+  const menuToggle = document.getElementById('menuToggle');
+  const navLinksEl = document.getElementById('navLinks');
+  if (menuToggle && navLinksEl) {
+    menuToggle.addEventListener('click', () => {
+      navLinksEl.classList.toggle('active');
+      menuToggle.textContent = navLinksEl.classList.contains('active') ? '✕' : '☰';
+    });
+  }
+
+  function showToast(badgeText, title, icon = '✦') {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.className = 'cv-toast-container';
+      document.body.appendChild(container);
+    }
+
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const toast = document.createElement('div');
+    toast.className = 'cv-toast';
+    
+    toast.innerHTML = `
+      <div class="cv-toast-icon">${esc(icon)}</div>
+      <div class="cv-toast-content">
+        <div class="cv-toast-tag">${esc(badgeText)}</div>
+        <div class="cv-toast-title">${esc(title)}</div>
+        <div class="cv-toast-time">${now}</div>
+      </div>
+      <button class="cv-toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.animation = 'slideOut 0.3s forwards';
+      setTimeout(() => toast.remove(), 300);
+    }, 5000);
+  }
+
+  function renderNavbar() {
+    let user = currentUser;
+
+    const nav = document.getElementById('navLinks');
+    if (!nav) return;
+
+    if (!user) {
+      nav.innerHTML = `
+        <a href="index.html">Discover</a>
+        <a href="organizers.html" class="active">Organizers</a>
+        <a href="login.html" class="logout-btn">Login</a>
+      `;
+      return;
+    }
+
+    const isOrganizer = user.role === 'organizer' || user.is_organizer === true;
+
+    if (isOrganizer) {
+      nav.innerHTML = `
+        <a href="index.html">Discover</a>
+        <a href="tickets.html">My Tickets</a>
+        <a href="organizers.html" class="active">Organizers</a>
+        <a href="organizer_dashboard.html">Dashboard</a>
+        <a href="organizer.html">＋ Create Event</a>
+        <a href="verify.html">Scan Tickets</a>
+        <a href="#" onclick="logout()" class="logout-btn">Logout (${esc(user.nickname || user.name)})</a>
+      `;
+    } else {
+      nav.innerHTML = `
+        <a href="index.html">Discover</a>
+        <a href="tickets.html">My Tickets</a>
+        <a href="organizers.html" class="active">Organizers</a>
+        <a href="#" onclick="logout()" class="logout-btn">Logout (${esc(user.nickname || user.name)})</a>
+      `;
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem('cv_user');
+    supabaseClient.auth.signOut();
+    window.location.href = 'index.html';
+  }
+
+  function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function escAttr(s){ return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+  // 8 random characters from a look-alike-free alphabet (no 0/O, 1/I)
+  function newTicketId(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const buf = new Uint32Array(8);
+    crypto.getRandomValues(buf);
+    return 'TL-' + Array.from(buf, n => chars[n % chars.length]).join('');
+  }
+  function niceDate(d){ return !d ? 'Date TBA' : new Date(d+'T12:00:00').toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'}); }
+  function money(n){ return Number(n)===0?'Free':'₦'+Number(n).toLocaleString('en-NG'); }
+
+  function isPastEvent(eventDateStr) {
+    if (!eventDateStr) return false;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const eventDate = new Date(eventDateStr + 'T23:59:59');
+    return eventDate < today;
+  }
+
+  async function loadData() {
+    const { data: eventsData } = await supabaseClient.from('events').select('*');
+    allEventsList = eventsData || [];
+
+    const { data: profilesData } = await supabaseClient.from('profiles').select('*').eq('role', 'organizer');
+
+    const map = new Map();
+
+    (profilesData || []).forEach(p => {
+      map.set(p.nickname || p.name || 'Organizer', {
+        name: p.nickname || p.name || 'Organizer',
+        verified: p.verified !== false,
+        bio: p.bio || 'Official Event Host on TagLine.',
+        handle: '@' + (p.nickname || 'organizer').toLowerCase().replace(/\s+/g, '')
+      });
+    });
+
+    allEventsList.forEach(e => {
+      if (e.organizer && !map.has(e.organizer)) {
+        map.set(e.organizer, {
+          name: e.organizer,
+          verified: true,
+          bio: 'Verified Event Organizer on TagLine.',
+          handle: '@' + e.organizer.toLowerCase().replace(/\s+/g, '')
+        });
+      }
+    });
+
+    organizersList = Array.from(map.values());
+    filterOrganizers();
+  }
+
+  function filterOrganizers() {
+    const q = (document.getElementById('searchInput').value || '').toLowerCase();
+    const grid = document.getElementById('organizerGrid');
+    grid.innerHTML = '';
+
+    const list = organizersList.filter(o => o.name.toLowerCase().includes(q) || o.handle.toLowerCase().includes(q));
+
+    if (!list.length) {
+      grid.innerHTML = '<div class="empty">No organizers found matching your search.</div>';
+      return;
+    }
+
+    list.forEach(o => {
+      const orgEvents = allEventsList.filter(e => e.organizer === o.name);
+      const isFollowing = follows.includes(o.name);
+
+      const card = document.createElement('div');
+      card.className = 'org-card';
+      card.onclick = (e) => {
+        if (!e.target.classList.contains('follow-btn')) {
+          openOrganizerProfile(o.name);
+        }
+      };
+
+      card.innerHTML = `
+        <div style="display:flex;gap:14px;align-items:center">
+          <div class="avatar">${esc(o.name.charAt(0).toUpperCase())}</div>
+          <div>
+            <h3 style="margin:0 0 2px;font-size:17px">${esc(o.name)}</h3>
+            <span class="verified-badge">✔ Verified Organizer ✦</span>
+          </div>
+        </div>
+        <p style="margin:0;font-size:13px;color:var(--muted);line-height:1.4">${esc(o.bio)}</p>
+        <div class="stats-row">
+          <span>Hosted: <strong>${orgEvents.length} Events</strong></span>
+          <span style="margin-left:auto">Tap to view profile →</span>
+        </div>
+        <button class="follow-btn ${isFollowing ? 'secondary' : ''}" onclick="event.stopPropagation(); toggleFollow('${esc(escAttr(o.name))}')" style="width:100%;margin-top:6px">
+          ${isFollowing ? '✓ Following' : '＋ Follow Host'}
+        </button>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function toggleFollow(name){
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) { user = null; }
+
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    let userFollowsKey = `cv_follows_${user.id}`;
+    let userFollows = JSON.parse(localStorage.getItem(userFollowsKey) || '[]');
+
+    if(userFollows.includes(name)) {
+      userFollows = userFollows.filter(x=>x!==name);
+      showToast('ORGANIZER UNFOLLOWED', `You unfollowed ${name}`, '👥');
+    } else {
+      userFollows.push(name);
+      showToast('ORGANIZER FOLLOWED', `You are now following ${name}`, '⭐');
+    }
+    localStorage.setItem(userFollowsKey, JSON.stringify(userFollows));
+    follows = userFollows;
+    filterOrganizers();
+  }
+
+  function openOrganizerProfile(orgName) {
+    const o = organizersList.find(x => x.name === orgName) || {
+      name: orgName,
+      verified: true,
+      bio: 'Verified Event Organizer on TagLine.',
+      handle: '@' + orgName.toLowerCase().replace(/\s+/g, '')
+    };
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const orgEvents = allEventsList.filter(e => e.organizer === orgName);
+    const upcoming = orgEvents.filter(e => new Date(e.date + 'T23:59:59') >= today);
+    const past = orgEvents.filter(e => new Date(e.date + 'T23:59:59') < today);
+
+    document.getElementById('modalContent').innerHTML = `
+      <div class="profile-header">
+        <div class="profile-avatar">${esc(o.name.charAt(0).toUpperCase())}</div>
+        <div>
+          <h2 style="margin:0 0 4px">${esc(o.name)}</h2>
+          <span class="verified-badge">✔ Verified Organizer ✦</span>
+          <p style="margin:4px 0 0;font-size:12px;color:var(--muted)">${esc(o.handle)}</p>
+        </div>
+      </div>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:18px">${esc(o.bio)}</p>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tabUpcoming" onclick="switchTab('upcoming')">Upcoming / Live (${upcoming.length})</button>
+        <button class="tab-btn" id="tabPast" onclick="switchTab('past')">Past Events (${past.length})</button>
+      </div>
+
+      <div id="eventsContainer"></div>
+    `;
+
+    window.currentOrgUpcoming = upcoming;
+    window.currentOrgPast = past;
+
+    document.getElementById('modal').classList.remove('hidden');
+    switchTab('upcoming');
+  }
+
+  function switchTab(type) {
+    const container = document.getElementById('eventsContainer');
+    const tabUpcoming = document.getElementById('tabUpcoming');
+    const tabPast = document.getElementById('tabPast');
+
+    if (type === 'upcoming') {
+      tabUpcoming.classList.add('active');
+      tabPast.classList.remove('active');
+
+      if (!window.currentOrgUpcoming.length) {
+        container.innerHTML = '<div class="empty">No upcoming events scheduled right now.</div>';
+        return;
+      }
+
+      container.innerHTML = window.currentOrgUpcoming.map(e => `
+        <div class="event-mini-card">
+          <div>
+            <h4>${esc(e.name)}</h4>
+            <p>📍 ${esc(e.venue || e.campus)} • 📅 ${niceDate(e.date)}</p>
+          </div>
+          <button onclick="eventDetails('${e.id}')" style="font-size:12px;padding:8px 12px;width:auto;">View Event</button>
+        </div>
+      `).join('');
+    } else {
+      tabPast.classList.add('active');
+      tabUpcoming.classList.remove('active');
+
+      if (!window.currentOrgPast.length) {
+        container.innerHTML = '<div class="empty">No past events recorded.</div>';
+        return;
+      }
+
+      container.innerHTML = window.currentOrgPast.map(e => `
+        <div class="event-mini-card" style="opacity:0.8">
+          <div>
+            <h4>${esc(e.name)}</h4>
+            <p>📍 ${esc(e.venue || e.campus)} • 📅 ${niceDate(e.date)}</p>
+          </div>
+          <button onclick="eventDetails('${e.id}')" class="secondary" style="font-size:12px;padding:8px 12px;width:auto;">View Pass</button>
+        </div>
+      `).join('');
+    }
+  }
+
+  function eventDetails(id){
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) { user = null; }
+
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    let e = allEventsList.find(x => String(x.id) === String(id));
+    if(!e) return;
+
+    let isPast = isPastEvent(e.date);
+
+    document.getElementById('modalContent').innerHTML = `
+      <div style="margin-bottom:12px;">
+        <button onclick="openOrganizerProfile('${esc(escAttr(e.organizer))}')" class="secondary" style="width:auto;font-size:12px;padding:6px 12px;">← Back to Profile</button>
+      </div>
+      <div class="eyebrow" style="color:#ffb38b;font-size:12px;font-weight:850;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:6px;">${esc(e.category)} • ${isPast ? 'PAST EVENT' : 'UPCOMING'}</div>
+      <h2>${esc(e.name)}</h2>
+      <p style="color:var(--muted)">${esc(e.desc||'')}</p>
+      <div class="box" style="padding:14px;margin-bottom:14px">
+        <p style="margin:0">
+          📍 <strong>Venue:</strong> ${esc(e.venue)}<br>
+          🎓 <strong>Location:</strong> ${esc(e.campus)}<br>
+          📅 <strong>Date:</strong> ${niceDate(e.date)}<br>
+          👤 <strong>Organizer:</strong> ${esc(e.organizer)}
+        </p>
+      </div>
+      ${isPast 
+        ? `<button disabled style="width:100%;font-size:15px;background:var(--panel2);color:var(--muted);cursor:not-allowed">⌛ Event Has Ended</button>`
+        : `<button onclick="showTierSelection('${e.id}')" style="width:100%;font-size:15px">🎟️ Claim Ticket Pass</button>`
+      }`;
+  }
+
+  function showTierSelection(eventId) {
+    let e = allEventsList.find(x => String(x.id) === String(eventId));
+    if (!e) return;
+
+    let tiers = e.tiers;
+    if (typeof tiers === 'string') {
+      try { tiers = JSON.parse(tiers); } catch(err) { tiers = null; }
+    }
+
+    if (!tiers || !tiers.length) {
+      tiers = [{ name: 'Regular Pass', price: e.price || 0 }];
+    }
+
+    let tierOptionsHTML = tiers.map((t, idx) => `
+      <label style="display:flex;align-items:center;justify-content:space-between;background:var(--panel2);border:1px solid var(--line);padding:12px;border-radius:12px;margin-bottom:8px;cursor:pointer;">
+        <div>
+          <input type="radio" name="selectedTier" value="${idx}" ${idx === 0 ? 'checked' : ''}>
+          <strong style="margin-left:8px;">${esc(t.name)}</strong>
+        </div>
+        <span style="color:var(--accent);font-weight:800;">${money(t.price)}</span>
+      </label>
+    `).join('');
+
+    document.getElementById('modalContent').innerHTML = `
+      <div style="margin-bottom:12px;">
+        <button onclick="eventDetails('${e.id}')" class="secondary" style="width:auto;font-size:12px;padding:6px 12px;">← Back to Event Details</button>
+      </div>
+      <h2>Select Package / Table Tier</h2>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">Choose your pass or table tier for <strong>${esc(e.name)}</strong>:</p>
+      
+      <form onsubmit="confirmTierTicket(event, '${e.id}')">
+        <div style="margin-bottom:16px;">
+          ${tierOptionsHTML}
+        </div>
+        <button type="submit" style="width:100%;font-size:15px">Confirm & Claim Pass</button>
+      </form>
+    `;
+  }
+
+  async function confirmTierTicket(eventObj, eventId) {
+    eventObj.preventDefault();
+    let user = JSON.parse(localStorage.getItem('cv_user') || 'null');
+    let e = allEventsList.find(x => String(x.id) === String(eventId));
+
+    let tiers = e.tiers;
+    if (typeof tiers === 'string') {
+      try { tiers = JSON.parse(tiers); } catch(err) { tiers = null; }
+    }
+    if (!tiers || !tiers.length) {
+      tiers = [{ name: 'Regular Pass', price: e.price || 0 }];
+    }
+
+    const selectedIndex = document.querySelector('input[name="selectedTier"]:checked')?.value || 0;
+    const chosenTier = tiers[selectedIndex] || tiers[0];
+
+    const ticketId = newTicketId();
+
+    const { error } = await supabaseClient.from('tickets').insert([
+      {
+        id: ticketId,
+        event_id: eventId,
+        user_id: user.id,
+        user_name: user.name || user.nickname || 'Attendee',
+        tier_name: chosenTier.name,
+        price: chosenTier.price,
+        status: 'valid'
+      }
+    ]);
+
+    if (error) {
+      showToast('BOOKING ERROR', error.message, '⚠️');
+      return;
+    }
+
+    let localTickets = JSON.parse(localStorage.getItem('cv_tickets') || '[]');
+    localTickets.push({
+      id: ticketId,
+      user_id: user.id,
+      name: e.name + ' (' + chosenTier.name + ')',
+      date: e.date,
+      venue: e.venue,
+      campus: e.campus,
+      tier_name: chosenTier.name,
+      price: chosenTier.price,
+      status: 'valid'
+    });
+    localStorage.setItem('cv_tickets', JSON.stringify(localTickets));
+
+    closeModal();
+    showToast('PASS RESERVED', `Pass generated for ${chosenTier.name}! Ref: ${ticketId}`, '🎟️');
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.add('hidden');
+  }
+
+  renderNavbar();
+  loadData();
+</script>
+</body>
+</html>

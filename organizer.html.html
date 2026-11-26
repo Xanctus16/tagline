@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tag Line — Create Event</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0c1020;--panel:#151b30;--panel2:#1c2440;--text:#f4f6ff;--muted:#aeb8d4;--accent:#ff7b36;--green:#61d6a4;--line:#2b3454}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 80% 0,#25204d 0,transparent 35%),var(--bg);font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--text);min-height:100vh}
+a{text-decoration:none}
+button,input,select,textarea{font:inherit}
+button,.btn{cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-weight:750;background:var(--accent);color:#20120b;display:inline-block;width:100%}
+button.secondary,.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+button:hover,.btn:hover{filter:brightness(1.08)}
+.wrap{max-width:1280px;margin:auto;padding:20px;position:relative}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;position:relative}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;letter-spacing:-.5px;cursor:pointer;flex-shrink:0;color:var(--text)}
+.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#ffcb69);display:grid;place-items:center;color:#261306;font-size:21px}
+.brand small{display:block;font-size:10px;letter-spacing:1.6px;color:var(--muted);font-weight:700}
+
+/* Standardized Compact Navigation Header */
+.nav{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.nav a{background:transparent;color:var(--muted);padding:8px 12px;border-radius:12px;font-weight:750;display:inline-flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;border:1px solid transparent;transition:all 0.2s;white-space:nowrap;line-height:1.2}
+.nav a:hover{color:var(--text);border-color:var(--line);background:var(--panel2)}
+.nav a.active{background:var(--panel2);color:white;border-color:var(--line)}
+.nav a.logout-btn{color:#ffb38b;border-color:rgba(255,123,54,0.2)}
+.nav a.logout-btn:hover{background:rgba(255,123,54,0.1)}
+
+/* Mobile Hamburger Toggle Button */
+.menu-toggle {
+  display: none;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 1.25rem;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.form-box{max-width:640px;margin:30px auto;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:32px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.field label{font-size:12px;color:var(--muted);font-weight:750}
+.field input,.field select,.field textarea{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--text);outline:none;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+
+/* Tier & Table Builder Styles */
+.tier-builder{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:8px}
+.tier-row{display:grid;grid-template-columns:1.5fr 1fr 40px;gap:10px;align-items:center;margin-bottom:10px}
+.tier-row:last-child{margin-bottom:0}
+.remove-tier{background:rgba(255,82,82,0.15);color:#ff5252;border:1px solid rgba(255,82,82,0.3);border-radius:10px;height:42px;display:grid;place-items:center;padding:0;cursor:pointer;font-weight:800}
+
+.footer{color:#7782a4;font-size:12px;text-align:center;padding:40px 0 10px}
+
+/* Toast Notification Banner */
+.cv-toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+.cv-toast { pointer-events: auto; background: rgba(21, 27, 48, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 18px; padding: 14px 18px; min-width: 300px; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: flex-start; gap: 12px; animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; position: relative; }
+.cv-toast-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--line); display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+.cv-toast-content { flex: 1; }
+.cv-toast-tag { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--green); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+.cv-toast-tag::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; box-shadow: 0 0 8px var(--green); }
+.cv-toast-title { font-size: 13px; font-weight: 700; color: var(--text); margin: 0 0 2px 0; }
+.cv-toast-time { font-size: 10px; color: var(--muted); font-weight: 600; }
+.cv-toast-close { background: transparent; border: 0; color: var(--muted); font-size: 18px; padding: 0; cursor: pointer; line-height: 1; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes slideOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-20px) scale(0.95); } }
+
+@media(max-width:850px){
+  .menu-toggle { display: block; }
+  .nav {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+    z-index: 1000;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+  .nav.active { display: flex; }
+  .nav a { justify-content: center; padding: 12px; font-size: 14px; width: 100%; text-align: center; }
+  .tier-row { grid-template-columns: 1fr; }
+  .remove-tier { height: 38px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a href="index.html" class="brand">
+      <div class="logo">✦</div>
+      <div>Tag Line <small>SEAMLESS ACCESS</small></div>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">☰</button>
+    <nav class="nav" id="navLinks"></nav>
+  </header>
+
+  <div class="form-box">
+    <h2 style="margin:0 0 6px">＋ Host an Event</h2>
+    <p style="color:var(--muted);font-size:13px;margin:0 0 24px">Publish your show, party, festival, or tournament directly to the main feed.</p>
+
+    <form id="createEventForm">
+      <div class="field">
+        <label>Event Name *</label>
+        <input type="text" id="eventName" required placeholder="e.g. SDU Rave Night or Gaming Finals">
+      </div>
+      <div class="field">
+        <label>Campus Location *</label>
+        <select id="eventCampus" required>
+          <option>SDU, Ozoro</option>
+          <option>SDU, Orerokpe</option>
+          <option>DELSU, Abraka</option>
+          <option>DOU, Asaba</option>
+          <option>FUPRE, Warri</option>
+          <option>UNIDEL, Agbor</option>
+          <option>Other / Off-campus</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Venue Description *</label>
+        <input type="text" id="eventVenue" required placeholder="e.g. ETF Hall B or Student Center">
+      </div>
+      <div class="field">
+        <label>Event Date *</label>
+        <input type="date" id="eventDate" required>
+      </div>
+      <div class="field">
+        <label>Category *</label>
+        <select id="eventCategory" required>
+          <option>Music & Nightlife</option>
+          <option>Comedy</option>
+          <option>Academic Events</option>
+          <option>Pageantry & Festival</option>
+          <option>Sports Competition</option>
+          <option>House Party</option>
+          <option>Campus Carnival</option>
+          <option>Picnic</option>
+          <option>Rave/Carnival</option>
+          <option>Food Fest</option>
+          <option>Game Fest/ Tournament</option>
+          <option>Departmental Events</option>
+          <option>Faculty Events</option>
+          <option>Career/Seminar</option>
+          <option>Others</option>
+        </select>
+      </div>
+
+      <!-- DYNAMIC TICKET & TABLE TIER BUILDER -->
+      <div class="field">
+        <label>Ticket & Table Pricing Tiers *</label>
+        <div class="tier-builder" id="tierContainer"></div>
+        <button type="button" class="secondary" onclick="addTierRow()" style="margin-top:8px;padding:10px;font-size:13px">＋ Add Ticket / Table Package Tier</button>
+      </div>
+
+      <div class="field">
+        <label>Description (Optional)</label>
+        <textarea id="eventDesc" rows="3" placeholder="Tell attendees about the vibe, dress code, or DJs..."></textarea>
+      </div>
+      <button type="submit">Publish Live Event 🚀</button>
+    </form>
+  </div>
+
+  <div class="footer">Tag Line • Seamless Access</div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://ylbqwgigsvdrglgjcpyu.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsYnF3Z2lnc3ZkcmdsZ2pjcHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDQ1OTUsImV4cCI6MjEwODIyMDU5NX0.VjhL9UjElDZTdyjM3tX7qnk-8U_Qgrehq6yxkeVLELw';
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Mobile Menu Toggle Script
+  const menuToggle = document.getElementById('menuToggle');
+  const navLinksEl = document.getElementById('navLinks');
+  if (menuToggle && navLinksEl) {
+    menuToggle.addEventListener('click', () => {
+      navLinksEl.classList.toggle('active');
+      menuToggle.textContent = navLinksEl.classList.contains('active') ? '✕' : '☰';
+    });
+  }
+
+  // Ticket & Table Tier Options
+  const tierOptions = [
+    'Regular Pass',
+    'VIP / Premium Pass',
+    'Table for 4',
+    'Table for 5',
+    'Table for 6',
+    'Table for 7',
+    'Table for 8',
+    'Table for 9',
+    'Table for 10'
+  ];
+
+  function addTierRow(defaultType = 'Regular Pass', defaultPrice = 0) {
+    const container = document.getElementById('tierContainer');
+    const div = document.createElement('div');
+    div.className = 'tier-row';
+
+    let optionsHTML = tierOptions.map(opt => `<option value="${opt}" ${opt === defaultType ? 'selected' : ''}>${opt}</option>`).join('');
+
+    div.innerHTML = `
+      <select class="tier-type" required>${optionsHTML}</select>
+      <input type="number" class="tier-price" placeholder="Price (₦) - 0 for Free" min="0" value="${defaultPrice}" required>
+      <button type="button" class="remove-tier" onclick="this.parentElement.remove()" title="Remove Tier">✕</button>
+    `;
+    container.appendChild(div);
+  }
+
+  // Pre-populate initial Regular Pass row
+  addTierRow('Regular Pass', 0);
+
+  function showToast(badgeText, title, icon = '✦') {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.className = 'cv-toast-container';
+      document.body.appendChild(container);
+    }
+
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const toast = document.createElement('div');
+    toast.className = 'cv-toast';
+    
+    toast.innerHTML = `
+      <div class="cv-toast-icon">${esc(icon)}</div>
+      <div class="cv-toast-content">
+        <div class="cv-toast-tag">${esc(badgeText)}</div>
+        <div class="cv-toast-title">${esc(title)}</div>
+        <div class="cv-toast-time">${now}</div>
+      </div>
+      <button class="cv-toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.animation = 'slideOut 0.3s forwards';
+      setTimeout(() => toast.remove(), 300);
+    }, 5000);
+  }
+
+  const pendingToast = JSON.parse(sessionStorage.getItem('cv_flash_toast') || 'null');
+  if (pendingToast) {
+    showToast(pendingToast.tag, pendingToast.msg, pendingToast.icon);
+    sessionStorage.removeItem('cv_flash_toast');
+  }
+
+  function renderNavbar() {
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('cv_user') || 'null'); } catch(e) { user = null; }
+
+    if (!user || user.role !== 'organizer') {
+      sessionStorage.setItem('cv_flash_toast', JSON.stringify({
+        tag: 'ACCESS RESTRICTED',
+        msg: 'Organizer access required.',
+        icon: '🔐'
+      }));
+      window.location.href = 'login.html';
+      return;
+    }
+
+    const nav = document.getElementById('navLinks');
+    if (!nav) return;
+
+    nav.innerHTML = `
+      <a href="index.html">Discover</a>
+      <a href="tickets.html">My Tickets</a>
+      <a href="organizers.html">Organizers</a>
+      <a href="organizer_dashboard.html">My Dashboard</a>
+      <a href="organizer.html" class="active">＋ Create Event</a>
+      <a href="verify.html">Scan Tickets</a>
+      <a href="#" onclick="logout()" class="logout-btn">Logout (${esc(user.nickname)})</a>
+    `;
+  }
+
+  function logout() {
+    localStorage.removeItem('cv_user');
+    supabaseClient.auth.signOut();
+    sessionStorage.setItem('cv_flash_toast', JSON.stringify({
+      tag: 'AUTHENTICATION',
+      msg: 'Logged out successfully.',
+      icon: '🔒'
+    }));
+    window.location.href = 'login.html';
+  }
+
+  function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  document.getElementById('createEventForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    let user = JSON.parse(localStorage.getItem('cv_user') || 'null');
+
+    const name = document.getElementById('eventName').value.trim();
+    const campus = document.getElementById('eventCampus').value;
+    const venue = document.getElementById('eventVenue').value.trim();
+    const date = document.getElementById('eventDate').value;
+    const category = document.getElementById('eventCategory').value;
+    const desc = document.getElementById('eventDesc').value.trim();
+
+    // Extract tiers & calculate baseline starting price
+    const typeElements = document.querySelectorAll('.tier-type');
+    const priceElements = document.querySelectorAll('.tier-price');
+    const tiers = [];
+    let minPrice = Infinity;
+
+    typeElements.forEach((el, index) => {
+      const typeName = el.value;
+      const tierPrice = Number(priceElements[index].value) || 0;
+      tiers.push({ name: typeName, price: tierPrice });
+      if (tierPrice < minPrice) minPrice = tierPrice;
+    });
+
+    if (minPrice === Infinity) minPrice = 0;
+
+    const { error } = await supabaseClient.from('events').insert([
+      {
+        name,
+        campus,
+        venue,
+        date,
+        category,
+        price: minPrice,
+        tiers: tiers,
+        desc,
+        organizer: user.nickname || user.name || 'Host'
+      }
+    ]);
+
+    if (error) {
+      showToast('ERROR CREATING EVENT', error.message, '⚠️');
+      return;
+    }
+
+    sessionStorage.setItem('cv_flash_toast', JSON.stringify({
+      tag: 'EVENT CREATED',
+      msg: `"${name}" is now live on the discover feed!`,
+      icon: '🎉'
+    }));
+
+    window.location.href = 'index.html';
+  });
+
+  renderNavbar();
+</script>
+</body>
+</html>
