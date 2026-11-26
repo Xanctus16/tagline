@@ -5,90 +5,232 @@
 <title>TagLine — Scan & Verify Tickets</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--bg:#0c1020;--panel:#151b30;--panel2:#1c2440;--text:#f4f6ff;--muted:#aeb8d4;--accent:#ff7b36;--green:#61d6a4;--line:#2b3454;--red:#ff5252}
+:root{
+  --bg:#F4EDE0;
+  --panel:#14213D;
+  --panel2:#1E3057;
+  --cream:#F4EDE0;
+  --text:#14213D;
+  --on-dark:#F4EDE0;
+  --muted:#475569;
+  --on-dark-muted:#CBD5E1;
+  --accent:#FF6B5B;
+  --accent-dark:#2A0E0B;
+  --green:#16A34A;
+  --line:#CBD5E1;
+  --on-dark-line:#283B66;
+  --red:#DC2626;
+}
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(circle at 80% 0,#25204d 0,transparent 35%),var(--bg);font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--text);min-height:100vh}
-a{text-decoration:none}
+body{
+  margin:0;
+  background:radial-gradient(circle at 80% 0%,rgba(255,107,91,0.16) 0%,transparent 38%),var(--bg);
+  font-family:Inter,system-ui,-apple-system,sans-serif;
+  color:var(--text);
+  min-height:100vh;
+}
+a{text-decoration:none;color:inherit}
 button,input,select{font:inherit}
-button,.btn{cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-weight:750;background:var(--accent);color:#20120b;display:inline-block;width:100%}
-button:hover,.btn:hover{filter:brightness(1.08)}
+button,.btn{
+  cursor:pointer;
+  border:0;
+  border-radius:12px;
+  padding:12px 16px;
+  font-weight:750;
+  background:var(--accent);
+  color:var(--accent-dark);
+  display:inline-block;
+  width:100%;
+  transition:filter 0.2s,transform 0.15s;
+}
+button:hover,.btn:hover{filter:brightness(1.06)}
 .wrap{max-width:1280px;margin:0 auto;padding:20px;position:relative}
 .top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;position:relative}
-.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;letter-spacing:-.5px;cursor:pointer;flex-shrink:0;color:var(--text)}
-.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#ffcb69);display:grid;place-items:center;color:#261306;font-size:21px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;letter-spacing:-.5px;cursor:pointer;flex-shrink:0;color:var(--panel)}
+.logo{
+  width:38px;
+  height:38px;
+  border-radius:13px;
+  background:linear-gradient(135deg,var(--accent),#FF9E92);
+  display:grid;
+  place-items:center;
+  color:var(--panel);
+  font-size:21px;
+  box-shadow:0 6px 16px rgba(20,33,61,0.16);
+}
 .brand small{display:block;font-size:10px;letter-spacing:1.6px;color:var(--muted);font-weight:700}
 
 /* Standardized Compact Navigation Header */
 .nav{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-.nav a{background:transparent;color:var(--muted);padding:8px 12px;border-radius:12px;font-weight:750;display:inline-flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;border:1px solid transparent;transition:all 0.2s;white-space:nowrap;line-height:1.2}
-.nav a:hover{color:var(--text);border-color:var(--line);background:var(--panel2)}
-.nav a.active{background:var(--panel2);color:white;border-color:var(--line)}
-.nav a.logout-btn{color:#ffb38b;border-color:rgba(255,123,54,0.2)}
-.nav a.logout-btn:hover{background:rgba(255,123,54,0.1)}
+.nav a{
+  background:transparent;
+  color:var(--panel);
+  padding:8px 12px;
+  border-radius:12px;
+  font-weight:750;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-size:13px;
+  cursor:pointer;
+  border:1px solid transparent;
+  transition:all 0.2s;
+  white-space:nowrap;
+  line-height:1.2;
+}
+.nav a:hover,.nav a.active{background:var(--panel);color:var(--cream);border-color:var(--panel)}
+.nav a.logout-btn{color:var(--accent-dark);background:rgba(255,107,91,0.16);border-color:rgba(255,107,91,0.45)}
+.nav a.logout-btn:hover{background:var(--accent);color:var(--accent-dark)}
 
 /* Mobile Hamburger Toggle Button */
-.menu-toggle {
-  display: none;
-  background: var(--panel2);
-  border: 1px solid var(--line);
-  color: var(--text);
-  font-size: 1.25rem;
-  padding: 8px 12px;
-  border-radius: 12px;
-  cursor: pointer;
+.menu-toggle{
+  display:none;
+  background:var(--panel);
+  border:1px solid var(--panel);
+  color:var(--cream);
+  font-size:1.25rem;
+  padding:8px 12px;
+  border-radius:12px;
+  cursor:pointer;
 }
 
-.scan-box{max-width:520px;margin:30px auto;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:32px;text-align:center}
+.scan-box{
+  max-width:520px;
+  margin:30px auto;
+  background:var(--panel);
+  color:var(--on-dark);
+  border:1px solid var(--on-dark-line);
+  border-radius:24px;
+  padding:32px;
+  text-align:center;
+  box-shadow:0 18px 40px rgba(20,33,61,0.16);
+}
+.scan-box p{color:var(--on-dark-muted)}
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;text-align:left}
-.field label{font-size:12px;color:var(--muted);font-weight:750}
-.field input{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;color:var(--text);outline:none;width:100%;font-family:monospace;font-size:16px;letter-spacing:1px;text-transform:uppercase}
+.field label{font-size:12px;color:var(--on-dark-muted);font-weight:750}
+.field input{
+  background:var(--panel2);
+  border:1px solid var(--on-dark-line);
+  border-radius:12px;
+  padding:14px;
+  color:var(--cream);
+  outline:none;
+  width:100%;
+  font-family:monospace;
+  font-size:16px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+.field input::placeholder{color:#94A3B8}
 .field input:focus{border-color:var(--accent)}
-.result{margin-top:20px;padding:18px;border-radius:16px;background:var(--panel2);border:1px solid var(--line);text-align:left;display:none}
-.tier-badge{display:inline-block;background:var(--accent);color:#20120b;font-weight:850;padding:4px 10px;border-radius:8px;font-size:12px;margin:6px 0 10px}
-.footer{color:#7782a4;font-size:12px;text-align:center;padding:40px 0 10px}
+.result{
+  margin-top:20px;
+  padding:18px;
+  border-radius:16px;
+  background:var(--panel2);
+  border:1px solid var(--on-dark-line);
+  text-align:left;
+  display:none;
+}
+.tier-badge{
+  display:inline-block;
+  background:var(--accent);
+  color:var(--accent-dark);
+  font-weight:850;
+  padding:4px 10px;
+  border-radius:8px;
+  font-size:12px;
+  margin:6px 0 10px;
+}
+.footer{color:var(--muted);font-size:12px;text-align:center;padding:40px 0 10px}
 
 /* Toast Notification Banner */
-.cv-toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-.cv-toast { pointer-events: auto; background: rgba(21, 27, 48, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 18px; padding: 14px 18px; min-width: 300px; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: flex-start; gap: 12px; animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; position: relative; }
-.cv-toast-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--line); display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
-.cv-toast-content { flex: 1; }
-.cv-toast-tag { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--green); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
-.cv-toast-tag::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; box-shadow: 0 0 8px var(--green); }
-.cv-toast-title { font-size: 13px; font-weight: 700; color: var(--text); margin: 0 0 2px 0; }
-.cv-toast-time { font-size: 10px; color: var(--muted); font-weight: 600; }
-.cv-toast-close { background: transparent; border: 0; color: var(--muted); font-size: 18px; padding: 0; cursor: pointer; line-height: 1; }
-@keyframes slideIn { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes slideOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-20px) scale(0.95); } }
+.cv-toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.cv-toast{
+  pointer-events:auto;
+  background:rgba(20,33,61,0.94);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--on-dark-line);
+  border-radius:18px;
+  padding:14px 18px;
+  min-width:300px;
+  max-width:380px;
+  box-shadow:0 12px 30px rgba(20,33,61,0.28);
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  animation:slideIn 0.35s cubic-bezier(0.16,1,0.3,1) forwards;
+  position:relative;
+}
+.cv-toast-icon{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  background:var(--panel2);
+  border:1px solid var(--on-dark-line);
+  display:grid;
+  place-items:center;
+  font-size:18px;
+  flex-shrink:0;
+}
+.cv-toast-content{flex:1}
+.cv-toast-tag{
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  color:var(--accent);
+  margin-bottom:2px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.cv-toast-tag::after{
+  content:'';
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--accent);
+  display:inline-block;
+  box-shadow:0 0 8px var(--accent);
+}
+.cv-toast-title{font-size:13px;font-weight:700;color:var(--cream);margin:0 0 2px 0}
+.cv-toast-time{font-size:10px;color:var(--on-dark-muted);font-weight:600}
+.cv-toast-close{background:transparent;border:0;color:var(--on-dark-muted);font-size:18px;padding:0;cursor:pointer;line-height:1;width:auto}
+@keyframes slideIn{from{opacity:0;transform:translateY(-20px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes slideOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(-20px) scale(0.95)}}
 
 @media(max-width:850px){
-  .top { flex-wrap: nowrap; gap: 10px; }
-  .menu-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: auto;
-    flex-shrink: 0;
-    padding: 8px 12px;
-    font-size: 1.1rem;
+  .top{flex-wrap:nowrap;gap:10px}
+  .menu-toggle{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:auto;
+    flex-shrink:0;
+    padding:8px 12px;
+    font-size:1.1rem;
   }
-  .nav {
-    display: none;
-    flex-direction: column;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.8);
-    z-index: 1000;
-    align-items: stretch;
-    justify-content: flex-start;
+  .nav{
+    display:none;
+    flex-direction:column;
+    position:absolute;
+    top:100%;
+    left:0;
+    width:100%;
+    background:var(--panel);
+    border:1px solid var(--on-dark-line);
+    border-radius:16px;
+    padding:16px;
+    box-shadow:0 15px 35px rgba(20,33,61,0.32);
+    z-index:1000;
+    align-items:stretch;
+    justify-content:flex-start;
   }
-  .nav.active { display: flex; }
-  .nav a { justify-content: center; padding: 12px; font-size: 14px; width: 100%; text-align: center; }
+  .nav.active{display:flex}
+  .nav a{color:var(--cream);justify-content:center;padding:12px;font-size:14px;width:100%;text-align:center}
+  .nav a:hover,.nav a.active{background:var(--panel2);color:var(--cream);border-color:var(--on-dark-line)}
 }
 </style>
 </head>
@@ -105,14 +247,14 @@ button:hover,.btn:hover{filter:brightness(1.08)}
 
   <div class="scan-box">
     <h2 style="margin:0 0 6px">🔍 Entry Verification</h2>
-    <p style="color:var(--muted);font-size:13px;margin:0 0 24px">Enter attendee pass reference code to verify entry.</p>
+    <p style="font-size:13px;margin:0 0 24px">Enter attendee pass reference code to verify entry.</p>
 
     <form id="verifyForm">
       <div class="field">
         <label>Pass Code Reference</label>
         <input type="text" id="ticketCode" placeholder="e.g. TL-X89AB" required>
       </div>
-      <button type="submit">Verify & Check-In Pass</button>
+      <button type="submit">Verify &amp; Check-In Pass</button>
     </form>
 
     <div id="verifyResult" class="result"></div>
@@ -148,15 +290,15 @@ button:hover,.btn:hover{filter:brightness(1.08)}
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const toast = document.createElement('div');
     toast.className = 'cv-toast';
-    
+
     toast.innerHTML = `
       <div class="cv-toast-icon">${esc(icon)}</div>
       <div class="cv-toast-content">
         <div class="cv-toast-tag">${esc(badgeText)}</div>
         <div class="cv-toast-title">${esc(title)}</div>
-        <div class="cv-toast-time">${now}</div>
+        <div class="cv-toast-time">${esc(now)}</div>
       </div>
-      <button class="cv-toast-close" onclick="this.parentElement.remove()">×</button>
+      <button type="button" class="cv-toast-close" onclick="this.parentElement.remove()">×</button>
     `;
 
     container.appendChild(toast);
@@ -215,6 +357,47 @@ button:hover,.btn:hover{filter:brightness(1.08)}
   function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
   function money(n){ return Number(n)===0?'Free':'₦'+Number(n).toLocaleString('en-NG'); }
 
+  async function findTicketByCode(code) {
+    const joined = await supabaseClient
+      .from('tickets')
+      .select('*, events(*)')
+      .eq('id', code)
+      .maybeSingle();
+
+    if (!joined.error && joined.data) {
+      return { ticket: joined.data, error: null };
+    }
+
+    const plain = await supabaseClient
+      .from('tickets')
+      .select('*')
+      .eq('id', code)
+      .maybeSingle();
+
+    if (plain.error) {
+      return { ticket: null, error: plain.error };
+    }
+
+    if (!plain.data) {
+      return { ticket: null, error: joined.error || null };
+    }
+
+    let eventObj = null;
+    if (plain.data.event_id) {
+      const { data: ev } = await supabaseClient
+        .from('events')
+        .select('*')
+        .eq('id', plain.data.event_id)
+        .maybeSingle();
+      eventObj = ev || null;
+    }
+
+    return {
+      ticket: { ...plain.data, events: eventObj },
+      error: null
+    };
+  }
+
   document.getElementById('verifyForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const codeInput = document.getElementById('ticketCode');
@@ -222,18 +405,24 @@ button:hover,.btn:hover{filter:brightness(1.08)}
     const resultBox = document.getElementById('verifyResult');
 
     resultBox.style.display = 'block';
-    resultBox.innerHTML = '<p style="margin:0;color:var(--muted)">Searching ticket database...</p>';
+    resultBox.innerHTML = '<p style="margin:0;color:var(--on-dark-muted)">Searching ticket database...</p>';
 
-    const { data: ticket, error } = await supabaseClient
-      .from('tickets')
-      .select('*, events(*)')
-      .eq('id', code)
-      .single();
+    const { ticket, error } = await findTicketByCode(code);
 
-    if (error || !ticket) {
+    if (error) {
+      console.error('Ticket lookup error:', error);
       resultBox.innerHTML = `
-        <h4 style="margin:0 0 4px;color:#ff7b36">⚠️ INVALID / NOT FOUND</h4>
-        <p style="margin:0;font-size:13px;color:var(--muted)">Reference code "${esc(code)}" does not exist.</p>
+        <h4 style="margin:0 0 4px;color:var(--accent)">⚠️ LOOKUP ERROR</h4>
+        <p style="margin:0;font-size:13px;color:var(--on-dark-muted)">${esc(error.message || 'Could not query ticket database.')}</p>
+      `;
+      showToast('LOOKUP ERROR', `Could not check ticket ${code}.`, '⚠️');
+      return;
+    }
+
+    if (!ticket) {
+      resultBox.innerHTML = `
+        <h4 style="margin:0 0 4px;color:var(--accent)">⚠️ INVALID / NOT FOUND</h4>
+        <p style="margin:0;font-size:13px;color:var(--on-dark-muted)">Reference code "${esc(code)}" does not exist.</p>
       `;
       showToast('INVALID PASS', `Ticket ${code} was not found.`, '⚠️');
       return;
@@ -241,14 +430,15 @@ button:hover,.btn:hover{filter:brightness(1.08)}
 
     const tierName = ticket.tier_name || 'Regular Pass';
     const priceText = money(ticket.price || 0);
+    const eventName = ticket.events?.name || ticket.event_name || 'Event';
 
     if (ticket.status === 'used') {
       resultBox.innerHTML = `
         <h4 style="margin:0 0 4px;color:var(--red)">🛑 TICKET ALREADY USED</h4>
-        <div class="tier-badge" style="background:rgba(255,82,82,0.2);color:var(--red)">🏷️ ${esc(tierName)} • ${priceText}</div>
-        <p style="margin:0;font-size:13px;color:var(--muted)">
+        <div class="tier-badge" style="background:rgba(220,38,38,0.2);color:#FCA5A5">🏷️ ${esc(tierName)} • ${priceText}</div>
+        <p style="margin:0;font-size:13px;color:var(--on-dark-muted)">
           <strong>Attendee:</strong> ${esc(ticket.user_name)}<br>
-          <strong>Event:</strong> ${esc(ticket.events?.name || 'Event')}<br>
+          <strong>Event:</strong> ${esc(eventName)}<br>
           <strong>Status:</strong> Already scanned at door.
         </p>
       `;
@@ -267,8 +457,8 @@ button:hover,.btn:hover{filter:brightness(1.08)}
 
     if (updateError || !updated || !updated.length) {
       resultBox.innerHTML = `
-        <h4 style="margin:0 0 4px;color:#ff7b36">⚠️ CHECK-IN NOT SAVED</h4>
-        <p style="margin:0;font-size:13px;color:var(--muted)">
+        <h4 style="margin:0 0 4px;color:var(--accent)">⚠️ CHECK-IN NOT SAVED</h4>
+        <p style="margin:0;font-size:13px;color:var(--on-dark-muted)">
           ${updateError ? esc(updateError.message) : 'Another scanner may have just used this pass, or this account is not allowed to check in passes.'}<br>
           Do not admit this person until it is resolved.
         </p>
@@ -283,11 +473,11 @@ button:hover,.btn:hover{filter:brightness(1.08)}
     localStorage.setItem('cv_tickets', JSON.stringify(localTickets));
 
     resultBox.innerHTML = `
-      <h4 style="margin:0 0 4px;color:var(--green)">✅ VALID — CHECKED IN</h4>
+      <h4 style="margin:0 0 4px;color:#4ADE80">✅ VALID — CHECKED IN</h4>
       <div class="tier-badge">🏷️ ${esc(tierName)} • ${priceText}</div>
-      <p style="margin:0;font-size:13px;color:var(--text)">
+      <p style="margin:0;font-size:13px;color:var(--on-dark)">
         <strong>Attendee:</strong> ${esc(ticket.user_name)}<br>
-        <strong>Event:</strong> ${esc(ticket.events?.name || 'Event')}<br>
+        <strong>Event:</strong> ${esc(eventName)}<br>
         <strong>Status:</strong> Pass redeemed successfully.
       </p>
     `;
